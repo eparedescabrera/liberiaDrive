@@ -1,0 +1,44 @@
+@model LiberiaDriveMVC.Models.Cliente
+
+@{
+    Layout = null;
+}
+
+<h5>Detalles del Cliente</h5>
+<hr />
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Nombre:</dt>
+            <dd class="col-sm-8">@Model.Nombre</dd>
+
+            <dt class="col-sm-4">Apellidos:</dt>
+            <dd class="col-sm-8">@Model.Apellidos</dd>
+
+            <dt class="col-sm-4">Contacto:</dt>
+            <dd class="col-sm-8">
+                @(string.IsNullOrWhiteSpace(Model.Contacto) ? "—" : Model.Contacto)
+            </dd>
+
+            <dt class="col-sm-4">Fecha de Registro:</dt>
+            <dd class="col-sm-8">@Model.FechaRegistro.ToString("dd/MM/yyyy")</dd>
+
+            <dt class="col-sm-4">Estado:</dt>
+            <dd class="col-sm-8">
+                @if (Model.Estado)
+                {
+                    <span class="badge bg-success">Activo</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">Inactivo</span>
+                }
+            </dd>
+        </dl>
+    </div>
+</div>
+
+<div class="text-end mt-3">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+</div>

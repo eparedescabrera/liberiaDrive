@@ -1,0 +1,69 @@
+using Microsoft.AspNetCore.Mvc;
+using LiberiaDriveMVC.Services;
+using System.Data;
+
+namespace LiberiaDriveMVC.Controllers
+{
+    public class VehiculosController : Controller
+    {
+        private readonly DatabaseService _db;
+
+        public VehiculosController(DatabaseService db)
+        {
+            _db = db;
+        }
+
+        public IActionResult Index()
+        {
+            DataTable vehiculos = _db.EjecutarSP("sp_ListarVehiculos");
+            return View(vehiculos);
+        }
+
+        public IActionResult Create() => View();
+
+        [HttpPost]
+        public IActionResult Create(string marca, string modelo, string transmision, bool estado = true)
+        {
+            var parametros = new Dictionary<string, object>
+            {
+                { "@Marca", marca },
+                { "@Modelo", modelo },
+                { "@Transmision", transmision },
+                { "@Estado", estado }
+            };
+            _db.EjecutarSPNonQuery("sp_InsertarVehiculo", parametros);
+            return RedirectToAction("Index");
+        }
+
+        public IActionResult Edit(int id)
+        {
+            var parametros = new Dictionary<string, object> { { "@IdVehiculo", id } };
+            DataTable dt = _db.EjecutarSP("sp_ObtenerVehiculoPorId", parametros);
+            if (dt.Rows.Count == 0) return NotFound();
+            ViewBag.Vehiculo = dt.Rows[0];
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult Edit(int id, string marca, string modelo, string transmision, bool estado)
+        {
+            var parametros = new Dictionary<string, object>
+            {
+                { "@IdVehiculo", id },
+                { "@Marca", marca },
+                { "@Modelo", modelo },
+                { "@Transmision", transmision },
+                { "@Estado", estado }
+            };
+            _db.EjecutarSPNonQuery("sp_ActualizarVehiculo", parametros);
+            return RedirectToAction("Index");
+        }
+
+        public IActionResult Delete(int id)
+        {
+            var parametros = new Dictionary<string, object> { { "@IdVehiculo", id } };
+            _db.EjecutarSPNonQuery("sp_EliminarVehiculo", parametros);
+            return RedirectToAction("Index");
+        }
+    }
+}

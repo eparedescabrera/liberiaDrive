@@ -1,0 +1,19 @@
+@{
+    Layout = null;
+    var c = ViewBag.Cliente;
+}
+
+<h4>Detalle de Cliente</h4>
+<hr />
+
+<ul class="list-group mb-3">
+    <li class="list-group-item"><strong>Nombre:</strong> @c["Nombre"]</li>
+    <li class="list-group-item"><strong>Apellidos:</strong> @c["Apellidos"]</li>
+    <li class="list-group-item"><strong>Contacto:</strong> @c["Contacto"]</li>
+    <li class="list-group-item"><strong>Fecha Registro:</strong> @Convert.ToDateTime(c["FechaRegistro"]).ToString("dd/MM/yyyy")</li>
+    <li class="list-group-item"><strong>Estado:</strong> @(Convert.ToBoolean(c["Estado"]) ? "Activo" : "Inactivo")</li>
+</ul>
+
+<div class="text-end">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+</div>

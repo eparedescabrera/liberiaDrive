@@ -1,0 +1,44 @@
+@{
+    Layout = null;
+    var c = ViewBag.Cliente;
+}
+
+<h4>Editar Cliente</h4>
+<hr />
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" name="id" value="@c["IdCliente"]" />
+
+    <div class="mb-3">
+        <label>Nombre</label>
+        <input name="nombre" value="@c["Nombre"]" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+        <label>Apellidos</label>
+        <input name="apellidos" value="@c["Apellidos"]" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+        <label>Contacto</label>
+        <input name="contacto" value="@c["Contacto"]" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Fecha de Registro</label>
+        <input type="date" name="fechaRegistro"
+               value="@Convert.ToDateTime(c["FechaRegistro"]).ToString("yyyy-MM-dd")"
+               class="form-control" required />
+    </div>
+
+    <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" name="estado" value="true"
+               @(Convert.ToBoolean(c["Estado"]) ? "checked" : "") />
+        <label class="form-check-label">Activo</label>
+    </div>
+
+    <div class="d-flex justify-content-end">
+        <button type="submit" class="btn btn-success me-2">Actualizar</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+    </div>
+</form>
