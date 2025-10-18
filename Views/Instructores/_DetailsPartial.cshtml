@@ -1,0 +1,17 @@
+@{
+    Layout = null;
+    var i = ViewBag.Instructor;
+}
+
+<h5>Detalle del Instructor</h5>
+<hr />
+
+<ul class="list-group mb-3">
+    <li class="list-group-item"><strong>Nombre:</strong> @i["Nombre"]</li>
+    <li class="list-group-item"><strong>Apellidos:</strong> @i["Apellidos"]</li>
+    <li class="list-group-item"><strong>Estado:</strong> @(Convert.ToBoolean(i["Estado"]) ? "Activo" : "Inactivo")</li>
+</ul>
+
+<div class="text-end">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+</div>

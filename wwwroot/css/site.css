@@ -1,20 +1,20 @@
-/* Navbar Moderna */
+/* 🌙 Navbar moderna */
 .navbar {
-    transition: all 0.3s ease-in-out;
     backdrop-filter: blur(8px);
-    background: rgba(33, 37, 41, 0.85) !important;
+    background-color: rgba(33, 37, 41, 0.92) !important;
+    transition: all 0.3s ease-in-out;
 }
 
 .navbar-brand {
+    font-size: 1.3rem;
     font-weight: 600;
-    font-size: 1.2rem;
     letter-spacing: 0.5px;
 }
 
 .navbar-nav .nav-link {
     color: #f8f9fa !important;
     font-weight: 500;
-    transition: all 0.2s ease-in-out;
+    transition: color 0.2s, transform 0.2s;
 }
 
 .navbar-nav .nav-link:hover {
@@ -22,27 +22,25 @@
     transform: translateY(-1px);
 }
 
-.navbar-toggler {
-    border: none;
-}
-
-.navbar-toggler:focus {
-    box-shadow: none;
-}
-
 .dropdown-menu {
-    border-radius: 0.5rem;
-    animation: fadeIn 0.2s ease-in-out;
+    border-radius: 0.6rem;
+    border: none;
+    padding: 0.4rem 0;
+    animation: fadeIn 0.25s ease-in-out;
 }
 
-/* Animación de entrada */
+.dropdown-item:hover {
+    background-color: #00d1b2;
+    color: #fff !important;
+}
+
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-5px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
 /* En pantallas pequeñas */
-@media (max-width: 992px) {
+@media (max-width: 991px) {
     .navbar-nav .nav-link {
         text-align: center;
         padding: 10px;

@@ -17,39 +17,67 @@
     <header>
      <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm fixed-top">
     <div class="container-fluid">
-        <!-- LOGO / NOMBRE -->
+        <!-- LOGO / MARCA -->
         <a class="navbar-brand d-flex align-items-center" asp-controller="Home" asp-action="Index">
-            <i class="bi bi-car-front-fill me-2"></i> <span>LiberiaDrive</span>
+            <i class="bi bi-car-front-fill me-2 text-info"></i> <span class="fw-bold">LiberiaDrive</span>
         </a>
 
         <!-- BOTÓN HAMBURGUESA -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
-            aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+            aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <!-- CONTENIDO DEL MENÚ -->
-        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <div class="collapse navbar-collapse" id="mainNavbar">
+            <!-- MENÚ PRINCIPAL -->
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item"><a class="nav-link" asp-controller="Clientes" asp-action="Index">👥 Clientes</a></li>
-                <li class="nav-item"><a class="nav-link" asp-controller="Instructores" asp-action="Index">🧑‍🏫 Instructores</a></li>
-                <li class="nav-item"><a class="nav-link" asp-controller="Vehiculos" asp-action="Index">🚘 Vehículos</a></li>
-                <li class="nav-item"><a class="nav-link" asp-controller="Cursos" asp-action="Index">📚 Cursos</a></li>
-                <li class="nav-item"><a class="nav-link" asp-controller="Pagos" asp-action="Index">💵 Pagos</a></li>
+
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Clientes" asp-action="Index">
+                        <i class="bi bi-people-fill me-2"></i>Clientes
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Instructores" asp-action="Index">
+                        <i class="bi bi-person-badge-fill me-2"></i>Instructores
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Vehiculos" asp-action="Index">
+                        <i class="bi bi-truck-front-fill me-2"></i>Vehículos
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Cursos" asp-action="Index">
+                        <i class="bi bi-journal-text me-2"></i>Cursos
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Pagos" asp-action="Index">
+                        <i class="bi bi-cash-coin me-2"></i>Pagos
+                    </a>
+                </li>
             </ul>
 
-            <!-- PERFIL / CERRAR SESIÓN -->
+            <!-- PERFIL DE USUARIO -->
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userMenu"
                        role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-person-circle me-1"></i> Usuario
+                        <i class="bi bi-person-circle me-2"></i> Usuario
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end shadow">
-                        <li><a class="dropdown-item" href="#">Perfil</a></li>
-                        <li><a class="dropdown-item" href="#">Configuración</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-gear-fill me-2"></i>Configuración</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-person-lines-fill me-2"></i>Perfil</a></li>
                         <li><hr class="dropdown-divider" /></li>
-                        <li><a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">Cerrar sesión</a></li>
+                        <li><a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">
+                            <i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión
+                        </a></li>
                     </ul>
                 </li>
             </ul>
@@ -57,8 +85,11 @@
     </div>
 </nav>
 
-<!-- Compensar el espacio del menú fijo -->
+<!-- Compensar el alto del menú fijo -->
 <div style="height: 70px;"></div>
+
+
+
 
     </header>
     <div class="container">
@@ -76,6 +107,25 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/Clientes.js"></script>
+    
+    <script>
+document.addEventListener("scroll", () => {
+  const nav = document.querySelector(".navbar");
+  if (window.scrollY > 50) {
+    nav.classList.add("navbar-scrolled");
+  } else {
+    nav.classList.remove("navbar-scrolled");
+  }
+});
+</script>
+
+<style>
+.navbar-scrolled {
+  background-color: rgba(0, 0, 0, 0.95) !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+}
+</style>
+
 
     @await RenderSectionAsync("Scripts", required: false)
     
@@ -108,6 +158,11 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+}
+
+@if (Context.Request.Path.Value.Contains("/Instructores"))
+{
+    <script src="~/js/instructor.js"></script>
 }
 
 </body>

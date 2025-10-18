@@ -1,0 +1,88 @@
+@{
+    ViewData["Title"] = "Instructores";
+    Layout = "_Layout";
+    var instructores = ViewBag.Instructores as System.Data.DataTable;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">👨‍🏫 Lista de Instructores</h2>
+    <button class="btn btn-primary" onclick="abrirModal('/Instructores/Create', null, 'Nuevo Instructor')">
+        <i class="bi bi-plus-circle"></i> Nuevo Instructor
+    </button>
+</div>
+
+<table class="table table-bordered table-striped align-middle">
+    <thead class="table-dark">
+        <tr class="text-center">
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Apellidos</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (instructores != null && instructores.Rows.Count > 0)
+        {
+            foreach (System.Data.DataRow row in instructores.Rows)
+            {
+                bool activo = Convert.ToBoolean(row["Estado"]);
+                <tr>
+                    <td class="text-center">@row["IdInstructor"]</td>
+                    <td>@row["Nombre"]</td>
+                    <td>@row["Apellidos"]</td>
+                    <td class="text-center">
+                        @if (activo)
+                        {
+                            <span class="badge bg-success">Activo</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Inactivo</span>
+                        }
+                    </td>
+                    <td class="text-center">
+                        <button class="btn btn-info btn-sm text-white"
+                                onclick="abrirModal('/Instructores/Details', @row["IdInstructor"], 'Detalle Instructor')">
+                            <i class="bi bi-eye"></i> Ver
+                        </button>
+                        <button class="btn btn-warning btn-sm text-dark"
+                                onclick="abrirModal('/Instructores/Edit', @row["IdInstructor"], 'Editar Instructor')">
+                            <i class="bi bi-pencil"></i> Editar
+                        </button>
+                        <button class="btn btn-danger btn-sm"
+                                onclick="confirmarEliminarInstructor(@row["IdInstructor"], '@row["Nombre"]', '@row["Apellidos"]')">
+                            <i class="bi bi-trash"></i> Eliminar
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr><td colspan="5" class="text-center text-muted">No hay instructores registrados.</td></tr>
+        }
+    </tbody>
+</table>
+
+<!-- MODAL -->
+<div class="modal fade" id="clienteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="clienteModalLabel"></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="clienteModalBody">
+                <div class="text-center p-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-3">Cargando...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/instructor.js"></script>
+}
