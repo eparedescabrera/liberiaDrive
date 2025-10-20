@@ -1,0 +1,16 @@
+/* HERO images */
+#heroCarousel img {
+    height: 80vh;
+    object-fit: cover;
+}
+
+/* Navbar hover */
+.navbar-nav .nav-link:hover {
+    color: #ffc107 !important;
+}
+
+/* Cards hover effect */
+.card:hover {
+    transform: translateY(-5px);
+    transition: all 0.3s ease;
+}
