@@ -9,6 +9,8 @@ builder.Services.AddSession();
 
 // ✅ Registrar tu servicio DatabaseService
 builder.Services.AddScoped<DatabaseService>();
+builder.Services.AddScoped<EmailService>();
+
 
 // ✅ Configurar autenticación
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

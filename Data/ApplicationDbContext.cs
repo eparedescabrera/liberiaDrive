@@ -41,6 +41,8 @@ public partial class ApplicationDbContext : DbContext
     public virtual DbSet<Usuario> Usuario { get; set; }
 
     public virtual DbSet<Vehiculo> Vehiculo { get; set; }
+    public virtual DbSet<TokenRecuperacion> TokenRecuperacion { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -329,6 +331,27 @@ public partial class ApplicationDbContext : DbContext
                 .HasMaxLength(20)
                 .IsUnicode(false);
         });
+modelBuilder.Entity<TokenRecuperacion>(entity =>
+{
+    entity.HasKey(e => e.IdToken).HasName("PK__TokenRecuperacion");
+
+    entity.Property(e => e.Correo)
+        .HasMaxLength(100)
+        .IsUnicode(false)
+        .IsRequired();
+
+    entity.Property(e => e.Token)
+        .HasMaxLength(255)
+        .IsUnicode(false)
+        .IsRequired();
+
+    entity.Property(e => e.FechaExpira)
+        .HasColumnType("datetime")
+        .IsRequired();
+
+    entity.Property(e => e.Usado)
+        .HasDefaultValue(false);
+});
 
         OnModelCreatingPartial(modelBuilder);
     }

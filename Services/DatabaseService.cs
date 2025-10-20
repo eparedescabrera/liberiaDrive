@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.Data;
 using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
 
 namespace LiberiaDriveMVC.Services
 {
@@ -10,70 +7,45 @@ namespace LiberiaDriveMVC.Services
     {
         private readonly string _connectionString;
 
-        public DatabaseService(IConfiguration configuration)
+        public DatabaseService(IConfiguration cfg)
         {
-            _connectionString = configuration.GetConnectionString("DefaultConnection")
-                ?? throw new ArgumentNullException(nameof(_connectionString), "La cadena de conexión no puede ser nula.");
+            _connectionString = cfg.GetConnectionString("DefaultConnection")!;
         }
 
-        // =====================================================
-        // Ejecutar SP que NO devuelve resultados (INSERT, UPDATE, DELETE)
-        // =====================================================
-        public void EjecutarSPNonQuery(string nombreSP, Dictionary<string, object> parametros)
+        // ✅ DataTable: puede ejecutar SP o SQL directo
+        public DataTable EjecutarSPDataTable(string queryOrSP, Dictionary<string, object>? parametros = null, bool isSql = false)
         {
-            using (SqlConnection conn = new SqlConnection(_connectionString))
-            using (SqlCommand cmd = new SqlCommand(nombreSP, conn))
+            using var cn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand(queryOrSP, cn);
+            cmd.CommandType = isSql ? CommandType.Text : CommandType.StoredProcedure;
+
+            if (parametros != null)
             {
-                cmd.CommandType = CommandType.StoredProcedure;
-
-                if (parametros != null)
-                {
-                    foreach (var p in parametros)
-                    {
-                        cmd.Parameters.AddWithValue(p.Key, p.Value ?? DBNull.Value);
-                    }
-                }
-
-                conn.Open();
-                cmd.ExecuteNonQuery();
+                foreach (var p in parametros)
+                    cmd.Parameters.AddWithValue(p.Key, p.Value ?? DBNull.Value);
             }
+
+            using var da = new SqlDataAdapter(cmd);
+            var dt = new DataTable();
+            da.Fill(dt);
+            return dt;
         }
 
-        // =====================================================
-        // Ejecutar SP o consulta que devuelve una tabla
-        // =====================================================
-       public DataTable EjecutarSPDataTable(string queryOrSP, Dictionary<string, object>? parametros = null, bool? isQuery = null)
-{
-    DataTable dt = new DataTable();
-    using (var connection = new SqlConnection(_connectionString))
-    using (var cmd = new SqlCommand(queryOrSP, connection))
-    {
-        // Detectar automáticamente si es consulta o SP
-        if (isQuery == null)
+        // ✅ NonQuery: puede ejecutar SP o SQL directo (¡la nueva sobrecarga!)
+        public int EjecutarSPNonQuery(string queryOrSP, Dictionary<string, object>? parametros = null, bool isSql = false)
         {
-            string lower = queryOrSP.Trim().ToLower();
-            if (lower.StartsWith("select") || lower.StartsWith("update") ||
-                lower.StartsWith("delete") || lower.StartsWith("insert"))
-                cmd.CommandType = CommandType.Text;
-            else
-                cmd.CommandType = CommandType.StoredProcedure;
-        }
-        else
-        {
-            cmd.CommandType = isQuery.Value ? CommandType.Text : CommandType.StoredProcedure;
-        }
+            using var cn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand(queryOrSP, cn);
+            cmd.CommandType = isSql ? CommandType.Text : CommandType.StoredProcedure;
 
-        if (parametros != null)
-        {
-            foreach (var p in parametros)
-                cmd.Parameters.AddWithValue(p.Key, p.Value ?? DBNull.Value);
+            if (parametros != null)
+            {
+                foreach (var p in parametros)
+                    cmd.Parameters.AddWithValue(p.Key, p.Value ?? DBNull.Value);
+            }
+
+            cn.Open();
+            return cmd.ExecuteNonQuery();
         }
-
-        SqlDataAdapter da = new SqlDataAdapter(cmd);
-        da.Fill(dt);
-    }
-    return dt;
-}
-
     }
 }

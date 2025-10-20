@@ -1,31 +1,37 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using LiberiaDriveMVC.Models;
 
-namespace LiberiaDriveMVC.Controllers;
-
-public class HomeController : Controller
+namespace LiberiaDriveMVC.Controllers
 {
-    private readonly ILogger<HomeController> _logger;
-
-    public HomeController(ILogger<HomeController> logger)
+    public class HomeController : Controller
     {
-        _logger = logger;
-    }
+        public IActionResult Index()
+        {
+            ViewData["Title"] = "Inicio - Liberia Drive";
+            return View();
+        }
 
-    public IActionResult Index()
-    {
-        return View();
-    }
+        public IActionResult About()
+        {
+            ViewData["Title"] = "Quiénes Somos";
+            return View();
+        }
 
-    public IActionResult Privacy()
-    {
-        return View();
-    }
+        public IActionResult Services()
+        {
+            ViewData["Title"] = "Servicios";
+            return View();
+        }
 
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        public IActionResult Contact()
+        {
+            ViewData["Title"] = "Contáctenos";
+            return View();
+        }
+
+        public IActionResult Privacy()
+        {
+            ViewData["Title"] = "Política de Privacidad";
+            return View();
+        }
     }
 }

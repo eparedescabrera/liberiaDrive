@@ -1,8 +1,86 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Inicio - LiberiaDrive";
+    Layout = "_Layout";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!-- ✅ Hero Section -->
+<header id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-inner">
+        <div class="carousel-item active">
+            <img src="~/img/images.png" class="d-block w-100" alt="Prácticas de manejo">
+            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-3">
+                <h1 class="fw-bold text-warning">Centro de Entrenamiento de Manejo</h1>
+                <p>Aprende con instructores certificados y vehículos duales</p>
+            </div>
+        </div>
+        <div class="carousel-item">
+            <img src="~/img/descarga.jpg" class="d-block w-100" alt="Cursos teóricos">
+            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-3">
+                <h1 class="fw-bold text-warning">Preparación Teórica</h1>
+                <p>Domina los exámenes del COSEVI con nuestros simulacros</p>
+            </div>
+        </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+    </button>
+</header>
+
+<!-- ✅ Servicios -->
+<section class="container text-center my-5">
+    <h2 class="fw-bold mb-4">Nuestros Servicios</h2>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <i class="bi bi-car-front fs-1 text-primary"></i>
+                    <h5 class="fw-bold mt-3">Clases Prácticas</h5>
+                    <p>Aprende con vehículos duales y la guía de expertos.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <i class="bi bi-journal-text fs-1 text-primary"></i>
+                    <h5 class="fw-bold mt-3">Curso Teórico</h5>
+                    <p>Simulacros oficiales del COSEVI y preparación personalizada.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <i class="bi bi-tools fs-1 text-primary"></i>
+                    <h5 class="fw-bold mt-3">Asesoría y Trámites</h5>
+                    <p>Te ayudamos en todo el proceso para obtener tu licencia.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ✅ Misión y Visión -->
+<section class="bg-light text-center py-5">
+    <div class="container">
+        <h2 class="fw-bold mb-4">Nuestra Misión y Visión</h2>
+        <p><strong>Misión:</strong> Brindar enseñanza vial de calidad para formar conductores responsables.</p>
+        <p><strong>Visión:</strong> Ser el centro de enseñanza automovilística líder en Guanacaste.</p>
+    </div>
+</section>
+
+<!-- ✅ Contacto -->
+<section class="container py-5 text-center">
+    <h2 class="fw-bold mb-4">Contáctanos</h2>
+    <p><i class="bi bi-geo-alt"></i> Liberia, Guanacaste, Costa Rica</p>
+    <p><i class="bi bi-telephone"></i> +506 8888-7777</p>
+    <p><i class="bi bi-envelope"></i> info@liberiadrive.com</p>
+    <a href="https://wa.me/50688887777" class="btn btn-success mt-3">
+        <i class="bi bi-whatsapp"></i> WhatsApp
+    </a>
+</section>
