@@ -1,0 +1,105 @@
+@model LiberiaDriveMVC.Models.Cliente
+@{
+    Layout = null;
+}
+
+<h5 class="fw-bold text-danger mb-3">
+    <i class="bi bi-trash3"></i> Eliminar Cliente
+</h5>
+<hr />
+
+<div class="alert alert-warning text-center shadow-sm">
+    ⚠️ <strong>Atención:</strong> Esta acción eliminará el registro de forma permanente.<br />
+    <small class="text-muted">No podrás recuperar los datos una vez confirmada la eliminación.</small>
+</div>
+
+<!-- 🔹 Datos del cliente -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                <strong>👤 Nombre:</strong> @Model.Nombre @Model.Apellidos
+            </li>
+            <li class="list-group-item">
+                <strong>📞 Contacto:</strong>
+                @(string.IsNullOrWhiteSpace(Model.Contacto) ? "No registrado" : Model.Contacto)
+            </li>
+            <li class="list-group-item">
+                <strong>📅 Fecha de Registro:</strong> @Model.FechaRegistro.ToString("dd/MM/yyyy")
+            </li>
+            <li class="list-group-item">
+                <strong>📌 Estado:</strong>
+                @if (Model.Estado)
+                {
+                    <span class="badge bg-success">Activo</span>
+                }
+                else
+                {
+                    <span class="badge bg-danger">Inactivo</span>
+                }
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- 🔹 Formulario de confirmación -->
+<form id="formEliminarCliente" method="post" class="text-end">
+    <input type="hidden" id="IdCliente" value="@Model.IdCliente" />
+
+    <button type="submit" class="btn btn-danger px-4">
+        <i class="bi bi-trash3"></i> Eliminar
+    </button>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+        <i class="bi bi-x-circle"></i> Cancelar
+    </button>
+    
+</form>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    $(document).off("submit", "#formEliminarCliente").on("submit", "#formEliminarCliente", function (e) {
+        e.preventDefault();
+        const id = $("#IdCliente").val();
+
+        Swal.fire({
+            title: "¿Eliminar cliente?",
+            text: "Esta acción no se puede deshacer.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#6c757d",
+            confirmButtonText: "Sí, eliminar",
+            cancelButtonText: "Cancelar"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "/Clientes/DeleteConfirmed",
+                    type: "POST",
+                    data: { IdCliente: id },
+                    success: function (resp) {
+                        if (resp.success) {
+                            Swal.fire({
+                                icon: "success",
+                                title: "Cliente eliminado",
+                                text: resp.message,
+                                timer: 1800,
+                                showConfirmButton: false
+                            });
+                            $("#modalCliente").modal("hide");
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            Swal.fire("Error", resp.message, "error");
+                        }
+                    },
+                    error: function () {
+                        Swal.fire("Error", "No se pudo eliminar el cliente.", "error");
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+
+

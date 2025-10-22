@@ -86,45 +86,6 @@ function abrirModalDetalles(id) {
         });
 }
 
-// ================================
-// ELIMINAR CLIENTE (SweetAlert + AJAX)
-// ================================
-function eliminarCliente(id) {
-    Swal.fire({
-        title: "¿Eliminar cliente?",
-        text: "Esta acción no se puede deshacer.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Sí, eliminar",
-        cancelButtonText: "Cancelar"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            $.ajax({
-                url: "/Clientes/Delete/" + id,
-                type: "POST",
-                success: function () {
-                    Swal.fire({
-                        title: "Eliminado",
-                        text: "El cliente fue eliminado correctamente.",
-                        icon: "success",
-                        confirmButtonColor: "#3085d6"
-                    }).then(() => {
-                        location.reload();
-                    });
-                },
-                error: function () {
-                    Swal.fire({
-                        title: "Error",
-                        text: "No se pudo eliminar el cliente.",
-                        icon: "error"
-                    });
-                }
-            });
-        }
-    });
-}
 
 // 🔹 Abrir modal para editar
 function abrirModalEditar(id) {
@@ -198,4 +159,50 @@ function abrirModalDetalles(id) {
         .fail(function () {
             $("#contenidoModal").html("<div class='text-danger text-center py-4'>❌ Error al cargar los datos.</div>");
         });
+}
+// 🧩 Función moderna para abrir el modal de eliminación
+function abrirModalEliminar(id) {
+    // Efecto visual de carga
+    $("#tituloModal").html(`<i class="bi bi-trash3 text-danger"></i> Eliminar Cliente`);
+    $("#contenidoModal").html(`
+        <div class="d-flex flex-column align-items-center justify-content-center py-5 text-center text-muted">
+            <div class="spinner-border text-danger mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+            <p class="fw-semibold">Cargando información del cliente...</p>
+        </div>
+    `);
+
+    // Mostrar el modal
+    const modal = new bootstrap.Modal(document.getElementById("modalCliente"));
+    modal.show();
+
+    // Solicitud AJAX para cargar los datos del cliente
+    $.ajax({
+        url: `/Clientes/Delete/${id}`,
+        type: "GET",
+        success: function (data) {
+            // Si viene contenido válido (HTML del partial)
+            if (data && data.trim().length > 0) {
+                $("#contenidoModal").hide().html(data).fadeIn(300);
+            } else {
+                mostrarErrorModal("No se pudo cargar el cliente seleccionado.");
+            }
+        },
+        error: function (xhr) {
+            let msg = xhr.responseText || "Error al obtener los datos del cliente.";
+            mostrarErrorModal(msg);
+        }
+    });
+}
+
+// 🎨 Función auxiliar para mostrar errores elegantes dentro del modal
+function mostrarErrorModal(mensaje) {
+    $("#contenidoModal").html(`
+        <div class="text-center py-5">
+            <i class="bi bi-exclamation-triangle text-danger display-4"></i>
+            <p class="mt-3 fw-bold text-danger">${mensaje}</p>
+            <button class="btn btn-outline-secondary mt-2" data-bs-dismiss="modal">
+                <i class="bi bi-x-circle"></i> Cerrar
+            </button>
+        </div>
+    `);
 }

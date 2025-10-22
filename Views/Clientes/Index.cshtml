@@ -17,7 +17,7 @@
 <table class="table table-bordered table-striped align-middle">
     <thead class="table-dark text-center">
         <tr>
-            <th>ID</th>
+            
             <th>Nombre</th>
             <th>Apellidos</th>
             <th>Contacto</th>
@@ -56,12 +56,13 @@
                         🔍 Ver
                     </button>
 
-                    <a asp-action="Delete"
-                       asp-route-id="@row["IdCliente"]"
-                       class="btn btn-danger btn-sm"
-                       onclick="return confirm('¿Eliminar este cliente?')">
-                        🗑️ Eliminar
-                    </a>
+                    <button class="btn btn-danger btn-sm"
+        onclick="abrirModalEliminar(@row["IdCliente"])">
+    🗑️ Eliminar
+</button>
+
+
+
                 </td>
             </tr>
         }
