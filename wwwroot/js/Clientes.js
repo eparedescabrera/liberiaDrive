@@ -22,7 +22,7 @@ function abrirModalCrear() {
             $("#contenidoModal").html(data);
 
             // Manejar el evento Submit del formulario
-            $("#formNuevoCliente").on("submit", function (e) {
+            $("#formNuevoCliente").off("submit").on("submit", function (e) {
                 e.preventDefault();
                 var form = $(this);
 
@@ -98,7 +98,7 @@ function abrirModalEditar(id) {
             $("#contenidoModal").html(data);
 
             // ✅ Reasignar el evento submit dentro del modal
-            $("#formEditarCliente").on("submit", function (e) {
+            $("#formEditarCliente").off("submit").on("submit", function (e) {
                 e.preventDefault();
 
                 var form = $(this);
@@ -146,20 +146,6 @@ function abrirModalEditar(id) {
         });
 }
 
-// 🔹 Abrir modal para ver detalles
-function abrirModalDetalles(id) {
-    $("#tituloModal").text("Detalles del Cliente");
-    $("#contenidoModal").html("<div class='text-center py-5 text-muted'>Cargando...</div>");
-    $("#modalCliente").modal("show");
-
-    $.get("/Clientes/Details/" + id)
-        .done(function (data) {
-            $("#contenidoModal").html(data);
-        })
-        .fail(function () {
-            $("#contenidoModal").html("<div class='text-danger text-center py-4'>❌ Error al cargar los datos.</div>");
-        });
-}
 // 🧩 Función moderna para abrir el modal de eliminación
 function abrirModalEliminar(id) {
     // Efecto visual de carga
