@@ -1,28 +1,21 @@
 @{
-    ViewData["Title"] = "Lista de Clientes";
-    var clientes = ViewBag.Clientes as System.Data.DataTable;
+    ViewData["Title"] = "Gestión de Clientes";
+    Layout = "_AdminLayout";
 }
 
-<h2>@ViewData["Title"]</h2>
+<h2 class="fw-bold text-center my-3">Gestión de Clientes</h2>
 
-<!-- 🔙 BOTÓN VOLVER -->
-<a asp-controller="Home" asp-action="Index" class="btn btn-secondary mb-3">
-    ⬅️ Volver al inicio
-</a>
-
-<button class="btn btn-primary mb-3"
-        onclick="abrirModal('@Url.Action("Create", "Clientes")', null, 'Registrar Nuevo Cliente')">
+<!-- 🔹 Botón Nuevo Cliente -->
+<div class="text-end mb-3">
+    <button class="btn btn-primary" onclick="abrirModalCrear()">
     ➕ Nuevo Cliente
 </button>
 
+</div>
 
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
-
-<table class="table table-bordered table-hover">
-    <thead class="table-dark">
+<!-- 🔹 Tabla de Clientes -->
+<table class="table table-bordered table-striped align-middle">
+    <thead class="table-dark text-center">
         <tr>
             <th>ID</th>
             <th>Nombre</th>
@@ -34,78 +27,69 @@
         </tr>
     </thead>
     <tbody>
-        @if (clientes != null && clientes.Rows.Count > 0)
+        @foreach (System.Data.DataRow row in ViewBag.Clientes.Rows)
         {
-            foreach (System.Data.DataRow c in clientes.Rows)
-            {
-                <tr>
-                    <td>@c["IdCliente"]</td>
-                    <td>@c["Nombre"]</td>
-                    <td>@c["Apellidos"]</td>
-                    <td>@c["Contacto"]</td>
-                    <td>@Convert.ToDateTime(c["FechaRegistro"]).ToString("dd/MM/yyyy")</td>
-                    <td>
-                        @if (Convert.ToBoolean(c["Estado"]))
-                        {
-                            <span class="badge bg-success">Activo</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-secondary">Inactivo</span>
-                        }
-                    </td>
-                    <td>
-                        <!-- 🔍 BOTÓN VER -->
-                        <button class="btn btn-info btn-sm" 
-                                onclick="abrirModal('@Url.Action("Details", "Clientes")', @c["IdCliente"], 'Detalle de Cliente')">
-                            Ver
-                        </button>
+            <tr class="@(Convert.ToBoolean(row["Estado"]) ? "" : "table-secondary")">
+                
+                <td>@row["Nombre"]</td>
+                <td>@row["Apellidos"]</td>
+                <td>@row["Contacto"]</td>
+                <td>@Convert.ToDateTime(row["FechaRegistro"]).ToString("yyyy-MM-dd")</td>
+                <td class="text-center">
+                    @if (Convert.ToBoolean(row["Estado"]))
+                    {
+                        <span class="badge bg-success">Activo</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Inactivo</span>
+                    }
+                </td>
+                <td class="text-center">
+                    <button class="btn btn-warning btn-sm"
+                            onclick="abrirModalEditar(@row["IdCliente"])">
+                        ✏️ Editar
+                    </button>
 
-                        <!-- ✏️ BOTÓN EDITAR -->
-                       <button type="button" 
-        class="btn btn-warning btn-sm" 
-        onclick="abrirModal('/Clientes/Edit', '@c["IdCliente"]', 'Editar Cliente')">
-    ✏️ Editar
-</button>
+                    <button class="btn btn-info btn-sm text-white"
+                            onclick="abrirModalDetalles(@row["IdCliente"])">
+                        🔍 Ver
+                    </button>
 
-
-                        <!-- 🗑️ BOTÓN ELIMINAR -->
-                        <button class="btn btn-danger btn-sm" 
-                                onclick="confirmarEliminar('@c["IdCliente"]', '@c["Nombre"]', '@c["Apellidos"]')">
-                            Eliminar
-                        </button>
-                    </td>
-                </tr>
-            }
-        }
-        else
-        {
-            <tr><td colspan="7" class="text-center">No hay registros.</td></tr>
+                    <a asp-action="Delete"
+                       asp-route-id="@row["IdCliente"]"
+                       class="btn btn-danger btn-sm"
+                       onclick="return confirm('¿Eliminar este cliente?')">
+                        🗑️ Eliminar
+                    </a>
+                </td>
+            </tr>
         }
     </tbody>
 </table>
 
-<!-- ==================== MODAL DINÁMICO ==================== -->
-<!-- Modal Genérico -->
-<div class="modal fade" id="clienteModal" tabindex="-1" aria-labelledby="clienteModalLabel" aria-hidden="true">
+<!-- 🔹 Modal Reutilizable -->
+<div class="modal fade" id="modalCliente" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="clienteModalLabel"></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title" id="tituloModal">Cliente</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
-            <div class="modal-body" id="clienteModalBody">
-                <!-- Aquí se carga dinámicamente el contenido vía AJAX -->
+            <div class="modal-body" id="contenidoModal">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-
+<!-- 🔹 Sección de Scripts -->
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <!-- Script personalizado de clientes -->
-   <script src="~/js/clientes.js" asp-append-version="true"></script>
-
+    <script src="~/js/clientes.js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="~/js/clientes.js?v=@DateTime.Now.Ticks"></script>
 }

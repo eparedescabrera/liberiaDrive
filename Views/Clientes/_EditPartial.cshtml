@@ -1,47 +1,47 @@
 @model LiberiaDriveMVC.Models.Cliente
-
 @{
     Layout = null;
 }
 
-<h5>Editar Cliente</h5>
+<h5 class="fw-bold">Editar Cliente</h5>
 <hr />
 
 <form id="formEditarCliente" asp-action="Edit" asp-controller="Clientes" method="post">
     @Html.HiddenFor(m => m.IdCliente)
 
     <div class="mb-3">
-        <label asp-for="Nombre" class="form-label"></label>
+        <label asp-for="Nombre" class="form-label fw-semibold"></label>
         <input asp-for="Nombre" class="form-control" placeholder="Ingrese el nombre" />
         <span asp-validation-for="Nombre" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
-        <label asp-for="Apellidos" class="form-label"></label>
+        <label asp-for="Apellidos" class="form-label fw-semibold"></label>
         <input asp-for="Apellidos" class="form-control" placeholder="Ingrese los apellidos" />
         <span asp-validation-for="Apellidos" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
-        <label asp-for="Contacto" class="form-label"></label>
-        <input asp-for="Contacto" class="form-control" placeholder="Ej: 88887777" />
+        <label asp-for="Contacto" class="form-label fw-semibold"></label>
+        <input asp-for="Contacto" class="form-control" type="number" placeholder="Ej: 88887777" />
         <span asp-validation-for="Contacto" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
-        <label asp-for="FechaRegistro" class="form-label"></label>
+        <label asp-for="FechaRegistro" class="form-label fw-semibold"></label>
         <input asp-for="FechaRegistro" type="date" class="form-control"
                value="@Model.FechaRegistro.ToString("yyyy-MM-dd")" />
         <span asp-validation-for="FechaRegistro" class="text-danger"></span>
     </div>
 
+    <!-- ✅ Campo de estado corregido -->
     <div class="form-check mb-3">
         <input asp-for="Estado" class="form-check-input" type="checkbox" />
         <label asp-for="Estado" class="form-check-label">Activo</label>
     </div>
 
     <div class="mt-3 text-end">
-        <button type="submit" class="btn btn-success">Actualizar</button>
+        <button type="submit" class="btn btn-success px-4">Actualizar</button>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
     </div>
 </form>

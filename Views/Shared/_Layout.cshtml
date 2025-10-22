@@ -27,8 +27,15 @@
                     <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="About"><i class="bi bi-people"></i> Nosotros</a></li>
                     <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Services"><i class="bi bi-tools"></i> Servicios</a></li>
                     <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Contact"><i class="bi bi-envelope"></i> Contacto</a></li>
+                    
                 </ul>
             </div>
+            <form asp-controller="Auth" asp-action="Logout" method="post">
+    <button type="submit" class="btn btn-outline-danger">
+        <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+    </button>
+</form>
+
         </div>
     </nav>
 

@@ -23,15 +23,15 @@ namespace LiberiaDriveMVC.Controllers
         // =====================================================
         public IActionResult Index()
         {
-            var clientes = _db.EjecutarSPDataTable("SELECT * FROM Cliente ORDER BY IdCliente DESC", null, true);
+            var clientes = _db.EjecutarSPDataTable("sp_ListarClientes", null);
             ViewBag.Clientes = clientes;
             return View();
         }
 
         // =====================================================
-        // CREAR CLIENTE - GET
+        // CREAR CLIENTE
         // =====================================================
-        [Authorize(Roles = "Administrador,Instructor")]
+        [Authorize(Roles = "Administrador")]
         public IActionResult Create()
         {
             var cliente = new Cliente
@@ -46,26 +46,18 @@ namespace LiberiaDriveMVC.Controllers
             return View(cliente);
         }
 
-        // =====================================================
-        // CREAR CLIENTE - POST
-        // =====================================================
         [HttpPost]
-        [Authorize(Roles = "Administrador,Instructor")]
+        [Authorize(Roles = "Administrador")]
         public IActionResult Create([FromForm] Cliente model)
         {
             if (!ModelState.IsValid)
-            {
-                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                    return PartialView("_CreatePartial", model);
-
-                return View(model);
-            }
+                return PartialView("_CreatePartial", model);
 
             var parametros = new Dictionary<string, object>
             {
                 { "@Nombre", model.Nombre.Trim() },
                 { "@Apellidos", model.Apellidos.Trim() },
-                { "@Contacto", string.IsNullOrWhiteSpace(model.Contacto) ? (object)DBNull.Value : model.Contacto.Trim() },
+                { "@Contacto", model.Contacto ?? (object)DBNull.Value },
                 { "@FechaRegistro", model.FechaRegistro.ToDateTime(TimeOnly.MinValue) },
                 { "@Estado", model.Estado }
             };
@@ -73,103 +65,81 @@ namespace LiberiaDriveMVC.Controllers
             try
             {
                 _db.EjecutarSPNonQuery("sp_InsertarCliente", parametros);
-
-                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                    return Json(new { success = true });
-
-                TempData["Success"] = "✅ Cliente registrado correctamente.";
-                return RedirectToAction("Index");
+                return Json(new { success = true });
             }
             catch (Exception ex)
             {
-                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                    return Json(new { success = false, message = ex.Message });
-
-                TempData["Error"] = ex.Message;
-                return RedirectToAction("Index");
+                return Json(new { success = false, message = ex.Message });
             }
         }
 
-        
-// DETALLES CLIENTE - GET
-// =====================================================
-public IActionResult Details(int id)
+        // =====================================================
+        // EDITAR CLIENTE - GET (trae datos)
+        // =====================================================
+       [Authorize(Roles = "Administrador,Instructor")]
+public IActionResult Edit(int id)
 {
-    string sql = "SELECT * FROM Cliente WHERE IdCliente = @IdCliente";
-    var parametros = new Dictionary<string, object> { { "@IdCliente", id } };
-    var dt = _db.EjecutarSPDataTable(sql, parametros);
-
-    if (dt.Rows.Count == 0)
-        return NotFound();
-
-    var row = dt.Rows[0];
-    var cliente = new Cliente
+    try
     {
-        IdCliente = Convert.ToInt32(row["IdCliente"]),
-        Nombre = row["Nombre"].ToString(),
-        Apellidos = row["Apellidos"].ToString(),
-        Contacto = row["Contacto"] == DBNull.Value ? "" : row["Contacto"].ToString(),
-        FechaRegistro = DateOnly.FromDateTime(Convert.ToDateTime(row["FechaRegistro"])),
-        Estado = Convert.ToBoolean(row["Estado"])
-    };
+        // 1️⃣ Ejecutamos sp_ListarClientes para traer todos
+        var dt = _db.EjecutarSPDataTable("sp_ListarClientes", null);
 
-    // ✅ Si viene del modal AJAX
-    if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-        return PartialView("_DetailsPartial", cliente);
-
-    // ✅ Si entra directo (por URL)
-    return View(cliente);
-}
-
-        [Authorize(Roles = "Administrador,Instructor")]
-        public IActionResult Edit(int id)
+        // 2️⃣ Buscamos solo el cliente con el Id solicitado
+        DataRow row = null;
+        foreach (DataRow r in dt.Rows)
         {
-            string sql = "SELECT * FROM Cliente WHERE IdCliente = @IdCliente";
-            var parametros = new Dictionary<string, object> { { "@IdCliente", id } };
-            var dt = _db.EjecutarSPDataTable(sql, parametros);
-
-            if (dt.Rows.Count == 0)
-                return NotFound();
-
-            var row = dt.Rows[0];
-            var cliente = new Cliente
+            if (Convert.ToInt32(r["IdCliente"]) == id)
             {
-                IdCliente = Convert.ToInt32(row["IdCliente"]),
-                Nombre = row["Nombre"].ToString(),
-                Apellidos = row["Apellidos"].ToString(),
-                Contacto = row["Contacto"] == DBNull.Value ? "" : row["Contacto"].ToString(),
-                FechaRegistro = DateOnly.FromDateTime(Convert.ToDateTime(row["FechaRegistro"])),
-                Estado = Convert.ToBoolean(row["Estado"])
-            };
-
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                return PartialView("_EditPartial", cliente);
-
-            return View(cliente);
+                row = r;
+                break;
+            }
         }
 
+        // 3️⃣ Si no lo encontró, devolvemos mensaje visible
+        if (row == null)
+            return Content("<div class='alert alert-warning text-center'>⚠️ Cliente no encontrado.</div>", "text/html");
+
+        // 4️⃣ Creamos el objeto Cliente con los datos
+        var cliente = new Cliente
+        {
+            IdCliente = Convert.ToInt32(row["IdCliente"]),
+            Nombre = row["Nombre"].ToString(),
+            Apellidos = row["Apellidos"].ToString(),
+            Contacto = row["Contacto"] == DBNull.Value ? "" : row["Contacto"].ToString(),
+            FechaRegistro = DateOnly.FromDateTime(Convert.ToDateTime(row["FechaRegistro"])),
+            Estado = Convert.ToBoolean(row["Estado"])
+        };
+
+        // 5️⃣ Retornamos el partial al modal si fue una petición AJAX
+        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            return PartialView("_EditPartial", cliente);
+
+        // 6️⃣ O mostramos la vista normal (raro, pero por seguridad)
+        return View(cliente);
+    }
+    catch (Exception ex)
+    {
+        // 7️⃣ Si hubo error SQL o conexión
+        return Content($"<div class='alert alert-danger text-center'>❌ Error al cargar los datos:<br>{ex.Message}</div>", "text/html");
+    }
+}
+
         // =====================================================
-        // EDITAR CLIENTE - POST
+        // EDITAR CLIENTE - POST (usa sp_ActualizarCliente)
         // =====================================================
-        [HttpPost]
-[Authorize(Roles = "Administrador,Instructor")]
+       [HttpPost]
+[Authorize(Roles = "Administrador")]
 public IActionResult Edit([FromForm] Cliente model)
 {
     if (!ModelState.IsValid)
-    {
-        // Si hay errores de validación, los devolvemos al modal
-        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            return PartialView("_EditPartial", model);
-
-        return View(model);
-    }
+        return PartialView("_EditPartial", model);
 
     var parametros = new Dictionary<string, object>
     {
         { "@IdCliente", model.IdCliente },
         { "@Nombre", model.Nombre.Trim() },
         { "@Apellidos", model.Apellidos.Trim() },
-        { "@Contacto", string.IsNullOrWhiteSpace(model.Contacto) ? (object)DBNull.Value : model.Contacto.Trim() },
+        { "@Contacto", model.Contacto ?? (object)DBNull.Value },
         { "@FechaRegistro", model.FechaRegistro.ToDateTime(TimeOnly.MinValue) },
         { "@Estado", model.Estado }
     };
@@ -177,20 +147,61 @@ public IActionResult Edit([FromForm] Cliente model)
     try
     {
         _db.EjecutarSPNonQuery("sp_ActualizarCliente", parametros);
-
-        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            return Json(new { success = true });
-
-        TempData["Success"] = "✅ Cliente actualizado correctamente.";
-        return RedirectToAction("Index");
+        return Json(new { success = true });
     }
     catch (Exception ex)
     {
-        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            return Json(new { success = false, message = ex.Message });
+        return Json(new { success = false, message = ex.Message });
+    }
+}
+// =====================================================
+// DETALLES CLIENTE - GET (usa sp_ListarClientes)
+// =====================================================
+[Authorize(Roles = "Administrador,Instructor")]
+public IActionResult Details(int id)
+{
+    try
+    {
+        // 1️⃣ Obtenemos todos los clientes desde el procedimiento
+        var dt = _db.EjecutarSPDataTable("sp_ListarClientes", null);
 
-        TempData["Error"] = ex.Message;
-        return RedirectToAction("Index");
+        // 2️⃣ Buscamos el cliente con el Id solicitado
+        DataRow row = null;
+        foreach (DataRow r in dt.Rows)
+        {
+            if (Convert.ToInt32(r["IdCliente"]) == id)
+            {
+                row = r;
+                break;
+            }
+        }
+
+        // 3️⃣ Si no lo encontró, devolvemos mensaje visible
+        if (row == null)
+            return Content("<div class='alert alert-warning text-center'>⚠️ Cliente no encontrado.</div>", "text/html");
+
+        // 4️⃣ Creamos el objeto Cliente
+        var cliente = new Cliente
+        {
+            IdCliente = Convert.ToInt32(row["IdCliente"]),
+            Nombre = row["Nombre"].ToString(),
+            Apellidos = row["Apellidos"].ToString(),
+            Contacto = row["Contacto"] == DBNull.Value ? "" : row["Contacto"].ToString(),
+            FechaRegistro = DateOnly.FromDateTime(Convert.ToDateTime(row["FechaRegistro"])),
+            Estado = Convert.ToBoolean(row["Estado"])
+        };
+
+        // 5️⃣ Si es una solicitud AJAX, devolvemos el partial
+        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            return PartialView("_DetailsPartial", cliente);
+
+        // 6️⃣ Si se accede directamente (poco común), mostramos vista completa
+        return View(cliente);
+    }
+    catch (Exception ex)
+    {
+        // 7️⃣ Si ocurre un error SQL o de conexión, lo mostramos en el modal
+        return Content($"<div class='alert alert-danger text-center'>❌ Error al cargar detalles:<br>{ex.Message}</div>", "text/html");
     }
 }
 
@@ -201,9 +212,17 @@ public IActionResult Edit([FromForm] Cliente model)
         public IActionResult Delete(int id)
         {
             var parametros = new Dictionary<string, object> { { "@IdCliente", id } };
-            _db.EjecutarSPNonQuery("sp_EliminarCliente", parametros);
 
-            TempData["Success"] = "🗑️ Cliente eliminado correctamente.";
+            try
+            {
+                _db.EjecutarSPNonQuery("sp_EliminarCliente", parametros);
+                TempData["Success"] = "🗑️ Cliente eliminado correctamente.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+            }
+
             return RedirectToAction("Index");
         }
     }

@@ -1,44 +1,36 @@
 @model LiberiaDriveMVC.Models.Cliente
-
 @{
     Layout = null;
 }
 
-<h5>Detalles del Cliente</h5>
-<hr />
+<h5 class="fw-bold mb-3">Detalles del Cliente</h5>
 
-<div class="card shadow-sm border-0">
-    <div class="card-body">
-        <dl class="row mb-0">
-            <dt class="col-sm-4">Nombre:</dt>
-            <dd class="col-sm-8">@Model.Nombre</dd>
-
-            <dt class="col-sm-4">Apellidos:</dt>
-            <dd class="col-sm-8">@Model.Apellidos</dd>
-
-            <dt class="col-sm-4">Contacto:</dt>
-            <dd class="col-sm-8">
-                @(string.IsNullOrWhiteSpace(Model.Contacto) ? "—" : Model.Contacto)
-            </dd>
-
-            <dt class="col-sm-4">Fecha de Registro:</dt>
-            <dd class="col-sm-8">@Model.FechaRegistro.ToString("dd/MM/yyyy")</dd>
-
-            <dt class="col-sm-4">Estado:</dt>
-            <dd class="col-sm-8">
-                @if (Model.Estado)
-                {
-                    <span class="badge bg-success">Activo</span>
-                }
-                else
-                {
-                    <span class="badge bg-secondary">Inactivo</span>
-                }
-            </dd>
-        </dl>
+<div class="row mb-2">
+    <div class="col-md-6">
+        <strong>Nombre:</strong> @Model.Nombre @Model.Apellidos
+    </div>
+    <div class="col-md-6">
+        <strong>Estado:</strong>
+        @if (Model.Estado)
+        {
+            <span class="badge bg-success">Activo</span>
+        }
+        else
+        {
+            <span class="badge bg-danger">Inactivo</span>
+        }
     </div>
 </div>
 
-<div class="text-end mt-3">
+<hr />
+
+<div class="mb-2">
+    <strong>Contacto:</strong> @(string.IsNullOrWhiteSpace(Model.Contacto) ? "No registrado" : Model.Contacto)
+</div>
+<div class="mb-2">
+    <strong>Fecha de Registro:</strong> @Model.FechaRegistro.ToString("dd/MM/yyyy")
+</div>
+
+<div class="text-end mt-4">
     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
 </div>

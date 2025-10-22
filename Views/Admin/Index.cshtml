@@ -1,0 +1,50 @@
+@{
+    Layout = "_AdminLayout"; <!-- usamos el layout moderno del panel -->
+    ViewData["Title"] = "Panel Administrativo";
+}
+
+<h2 class="fw-bold text-primary mb-4">Panel Administrativo</h2>
+
+<p class="text-muted">Bienvenido, @User.Identity?.Name 👋</p>
+
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <i class="bi bi-people fs-1 text-primary"></i>
+                <h5 class="mt-2">Clientes</h5>
+                <a href="/Clientes/Index" class="btn btn-outline-primary btn-sm">Ver</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <i class="bi bi-car-front fs-1 text-success"></i>
+                <h5 class="mt-2">Vehículos</h5>
+                <a href="/Vehiculos/Index" class="btn btn-outline-success btn-sm">Ver</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <i class="bi bi-calendar2-check fs-1 text-warning"></i>
+                <h5 class="mt-2">Citas</h5>
+                <a href="/Citas/Index" class="btn btn-outline-warning btn-sm">Ver</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <i class="bi bi-bar-chart fs-1 text-danger"></i>
+                <h5 class="mt-2">Reportes</h5>
+                <a href="/Reportes/Index" class="btn btn-outline-danger btn-sm">Ver</a>
+            </div>
+        </div>
+    </div>
+</div>
