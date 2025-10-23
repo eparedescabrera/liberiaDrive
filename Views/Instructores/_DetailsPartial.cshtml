@@ -1,17 +1,39 @@
+@* @model LiberiaDriveMVC.Models.Instructor
 @{
     Layout = null;
-    var i = ViewBag.Instructor;
 }
 
-<h5>Detalle del Instructor</h5>
+<h5 class="fw-bold text-primary mb-3">
+    <i class="bi bi-person-vcard"></i> Detalles del Instructor
+</h5>
 <hr />
 
-<ul class="list-group mb-3">
-    <li class="list-group-item"><strong>Nombre:</strong> @i["Nombre"]</li>
-    <li class="list-group-item"><strong>Apellidos:</strong> @i["Apellidos"]</li>
-    <li class="list-group-item"><strong>Estado:</strong> @(Convert.ToBoolean(i["Estado"]) ? "Activo" : "Inactivo")</li>
-</ul>
+<!-- 🔹 Información del Instructor -->
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                <strong>👤 Nombre:</strong> @Model.Nombre @Model.Apellidos
+            </li>
 
-<div class="text-end">
-    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            <div class="form-check mb-3">
+    <input type="checkbox" name="Estado" class="form-check-input" value="true"
+           @(Model.Estado == true ? "checked" : "") />
+    <input type="hidden" name="Estado" value="false" />
+    <label class="form-check-label">Activo</label>
 </div>
+
+        </ul>
+    </div>
+</div>
+
+<!-- 🔹 Botón de cierre -->
+<div class="text-end mt-3">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+        <i class="bi bi-x-circle"></i> Cerrar
+    </button>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+} *@

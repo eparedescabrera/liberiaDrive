@@ -18,19 +18,19 @@ namespace LiberiaDriveMVC.Controllers
             _db = db;
         }
 
-        // =======================
-        // LISTAR
-        // =======================
+        // =====================================================
+        // LISTAR INSTRUCTORES
+        // =====================================================
         public IActionResult Index()
         {
-            var instructores = _db.EjecutarSPDataTable("SELECT * FROM Instructor ORDER BY IdInstructor DESC", null, true);
+            var instructores = _db.EjecutarSPDataTable("sp_ListarInstructores", null);
             ViewBag.Instructores = instructores;
             return View();
         }
 
-        // =======================
-        // CREAR (GET)
-        // =======================
+        // =====================================================
+        // CREAR INSTRUCTOR - GET
+        // =====================================================
         [Authorize(Roles = "Administrador")]
         public IActionResult Create()
         {
@@ -42,61 +42,55 @@ namespace LiberiaDriveMVC.Controllers
             return View(instructor);
         }
 
-        // =======================
-        // CREAR (POST)
-        // =======================
+        // =====================================================
+        // CREAR INSTRUCTOR - POST
+        // =====================================================
         [HttpPost]
         [Authorize(Roles = "Administrador")]
         public IActionResult Create([FromForm] Instructor model)
         {
             if (!ModelState.IsValid)
-            {
-                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                    return PartialView("_CreatePartial", model);
-
-                return View(model);
-            }
+                return PartialView("_CreatePartial", model);
 
             var parametros = new Dictionary<string, object>
             {
                 { "@Nombre", model.Nombre.Trim() },
                 { "@Apellidos", model.Apellidos.Trim() },
-                { "@Estado", model.Estado ?? true }
+                { "@Estado", model.Estado }
             };
 
             try
             {
                 _db.EjecutarSPNonQuery("sp_InsertarInstructor", parametros);
-
-                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                    return Json(new { success = true });
-
-                TempData["Success"] = "✅ Instructor registrado correctamente.";
-                return RedirectToAction("Index");
+                return Json(new { success = true });
             }
             catch (Exception ex)
             {
-                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                    return Json(new { success = false, message = ex.Message });
-
-                TempData["Error"] = ex.Message;
-                return RedirectToAction("Index");
+                return Json(new { success = false, message = ex.Message });
             }
         }
 
-        // =======================
-        // EDITAR (GET)
-        // =======================
+        // =====================================================
+        // EDITAR INSTRUCTOR - GET
+        // =====================================================
         [Authorize(Roles = "Administrador")]
         public IActionResult Edit(int id)
         {
-            var parametros = new Dictionary<string, object> { { "@IdInstructor", id } };
-            var dt = _db.EjecutarSPDataTable("SELECT * FROM Instructor WHERE IdInstructor = @IdInstructor", parametros);
+            var dt = _db.EjecutarSPDataTable("sp_ListarInstructores", null);
 
-            if (dt.Rows.Count == 0)
-                return NotFound();
+            DataRow row = null;
+            foreach (DataRow r in dt.Rows)
+            {
+                if (Convert.ToInt32(r["IdInstructor"]) == id)
+                {
+                    row = r;
+                    break;
+                }
+            }
 
-            var row = dt.Rows[0];
+            if (row == null)
+                return Content("<div class='alert alert-warning text-center'>⚠️ Instructor no encontrado.</div>", "text/html");
+
             var instructor = new Instructor
             {
                 IdInstructor = Convert.ToInt32(row["IdInstructor"]),
@@ -111,79 +105,123 @@ namespace LiberiaDriveMVC.Controllers
             return View(instructor);
         }
 
-        // =======================
-        // EDITAR (POST)
-        // =======================
+        // =====================================================
+        // EDITAR INSTRUCTOR - POST
+        // =====================================================
         [HttpPost]
         [Authorize(Roles = "Administrador")]
         public IActionResult Edit([FromForm] Instructor model)
         {
             if (!ModelState.IsValid)
-            {
-                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                    return PartialView("_EditPartial", model);
-
-                return View(model);
-            }
+                return PartialView("_EditPartial", model);
 
             var parametros = new Dictionary<string, object>
             {
                 { "@IdInstructor", model.IdInstructor },
                 { "@Nombre", model.Nombre.Trim() },
                 { "@Apellidos", model.Apellidos.Trim() },
-                { "@Estado", model.Estado ?? true }
+                { "@Estado", model.Estado }
             };
 
             try
             {
                 _db.EjecutarSPNonQuery("sp_ActualizarInstructor", parametros);
-
-                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                    return Json(new { success = true });
-
-                TempData["Success"] = "✅ Instructor actualizado correctamente.";
-                return RedirectToAction("Index");
+                return Json(new { success = true });
             }
             catch (Exception ex)
             {
-                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                    return Json(new { success = false, message = ex.Message });
-
-                TempData["Error"] = ex.Message;
-                return RedirectToAction("Index");
+                return Json(new { success = false, message = ex.Message });
             }
         }
 
-        // =======================
-        // DETALLES
-        // =======================
+        // =====================================================
+        // DETALLES - GET
+        // =====================================================
+        [Authorize(Roles = "Administrador,Instructor")]
         public IActionResult Details(int id)
         {
-            var parametros = new Dictionary<string, object> { { "@IdInstructor", id } };
-            var dt = _db.EjecutarSPDataTable("SELECT * FROM Instructor WHERE IdInstructor = @IdInstructor", parametros);
+            var dt = _db.EjecutarSPDataTable("sp_ListarInstructores", null);
 
-            if (dt.Rows.Count == 0)
-                return NotFound();
+            DataRow row = null;
+            foreach (DataRow r in dt.Rows)
+            {
+                if (Convert.ToInt32(r["IdInstructor"]) == id)
+                {
+                    row = r;
+                    break;
+                }
+            }
 
-            ViewBag.Instructor = dt.Rows[0];
+            if (row == null)
+                return Content("<div class='alert alert-warning text-center'>⚠️ Instructor no encontrado.</div>", "text/html");
+
+            var instructor = new Instructor
+            {
+                IdInstructor = Convert.ToInt32(row["IdInstructor"]),
+                Nombre = row["Nombre"].ToString(),
+                Apellidos = row["Apellidos"].ToString(),
+                Estado = Convert.ToBoolean(row["Estado"])
+            };
 
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                return PartialView("_DetailsPartial");
+                return PartialView("_DetailsPartial", instructor);
 
-            return View();
+            return View(instructor);
         }
 
-        // =======================
-        // ELIMINAR
-        // =======================
+        // =====================================================
+        // ELIMINAR INSTRUCTOR - GET (muestra modal)
+        // =====================================================
         [Authorize(Roles = "Administrador")]
         public IActionResult Delete(int id)
         {
-            var parametros = new Dictionary<string, object> { { "@IdInstructor", id } };
-            _db.EjecutarSPNonQuery("sp_EliminarInstructor", parametros);
+            var dt = _db.EjecutarSPDataTable("sp_ListarInstructores", null);
 
-            TempData["Success"] = "🗑️ Instructor eliminado correctamente.";
-            return RedirectToAction("Index");
+            DataRow row = null;
+            foreach (DataRow r in dt.Rows)
+            {
+                if (Convert.ToInt32(r["IdInstructor"]) == id)
+                {
+                    row = r;
+                    break;
+                }
+            }
+
+            if (row == null)
+                return Content("<div class='alert alert-warning text-center'>⚠️ Instructor no encontrado.</div>", "text/html");
+
+            var instructor = new Instructor
+            {
+                IdInstructor = Convert.ToInt32(row["IdInstructor"]),
+                Nombre = row["Nombre"].ToString(),
+                Apellidos = row["Apellidos"].ToString(),
+                Estado = Convert.ToBoolean(row["Estado"])
+            };
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return PartialView("_DeletePartial", instructor);
+
+            return View(instructor);
+        }
+
+        // =====================================================
+        // ELIMINAR INSTRUCTOR - POST CONFIRMADO
+        // =====================================================
+        [HttpPost]
+        [Authorize(Roles = "Administrador")]
+        public IActionResult DeleteConfirmed(int IdInstructor)
+        {
+            var parametros = new Dictionary<string, object> { { "@IdInstructor", IdInstructor } };
+
+            try
+            {
+                _db.EjecutarSPNonQuery("sp_EliminarInstructor", parametros);
+                return Json(new { success = true, message = "Instructor eliminado correctamente." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
+            }
         }
     }
 }
