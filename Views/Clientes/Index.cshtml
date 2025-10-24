@@ -3,76 +3,74 @@
     Layout = "_AdminLayout";
 }
 
-<h2 class="fw-bold text-center my-3">Gestión de Clientes</h2>
+<h2 class="fw-bold text-center my-3 text-primary">
+    <i class="bi bi-people"></i> Gestión de Clientes
+</h2>
 
 <!-- 🔹 Botón Nuevo Cliente -->
 <div class="text-end mb-3">
-    <button class="btn btn-primary" onclick="abrirModalCrear()">
-    ➕ Nuevo Cliente
-</button>
-
+    <button class="btn btn-primary shadow-sm px-3" onclick="abrirModalCrear()">
+        <i class="bi bi-person-plus"></i> Nuevo Cliente
+    </button>
 </div>
 
-<!-- 🔹 Tabla de Clientes -->
-<table class=" Responsive table table-bordered table-striped align-middle">
-    <thead class="table-dark text-center">
-        <tr>
-            
-            <th>Nombre</th>
-            <th>Apellidos</th>
-            <th>Contacto</th>
-            <th>Fecha Registro</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (System.Data.DataRow row in ViewBag.Clientes.Rows)
-        {
-            <tr class="@(Convert.ToBoolean(row["Estado"]) ? "" : "table-secondary")">
-                
-                <td>@row["Nombre"]</td>
-                <td>@row["Apellidos"]</td>
-                <td>@row["Contacto"]</td>
-                <td>@Convert.ToDateTime(row["FechaRegistro"]).ToString("yyyy-MM-dd")</td>
-                <td class="text-center">
-                    @if (Convert.ToBoolean(row["Estado"]))
-                    {
-                        <span class="badge bg-success">Activo</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-danger">Inactivo</span>
-                    }
-                </td>
-                <td class="text-center">
-                    <button class="btn btn-warning btn-sm"
-                            onclick="abrirModalEditar(@row["IdCliente"])">
-                        ✏️ Editar
-                    </button>
-
-                    <button class="btn btn-info btn-sm text-white"
-                            onclick="abrirModalDetalles(@row["IdCliente"])">
-                        🔍 Ver
-                    </button>
-
-                    <button class="btn btn-danger btn-sm"
-        onclick="abrirModalEliminar(@row["IdCliente"])">
-    🗑️ Eliminar
-</button>
-
-
-
-                </td>
+<!-- 🔹 Tabla Responsive -->
+<div class="table-responsive shadow-sm rounded bg-white p-2">
+    <table class="table table-bordered table-hover align-middle mb-0">
+        <thead class="table-dark text-center">
+            <tr>
+                <th>Nombre</th>
+                <th>Apellidos</th>
+                <th>Contacto</th>
+                <th>Fecha Registro</th>
+                <th>Estado</th>
+                <th>Acciones</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (System.Data.DataRow row in ViewBag.Clientes.Rows)
+            {
+                <tr class="@(Convert.ToBoolean(row["Estado"]) ? "" : "table-secondary")">
+                    <td>@row["Nombre"]</td>
+                    <td>@row["Apellidos"]</td>
+                    <td>@row["Contacto"]</td>
+                    <td>@Convert.ToDateTime(row["FechaRegistro"]).ToString("yyyy-MM-dd")</td>
+                    <td class="text-center">
+                        @if (Convert.ToBoolean(row["Estado"]))
+                        {
+                            <span class="badge bg-success">Activo</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Inactivo</span>
+                        }
+                    </td>
+                    <td class="text-center">
+                        <button class="btn btn-warning btn-sm"
+                                onclick="abrirModalEditar(@row["IdCliente"])">
+                            ✏️ Editar
+                        </button>
+
+                        <button class="btn btn-info btn-sm text-white"
+                                onclick="abrirModalDetalles(@row["IdCliente"])">
+                            🔍 Ver
+                        </button>
+
+                        <button class="btn btn-danger btn-sm"
+                                onclick="abrirModalEliminar(@row["IdCliente"])">
+                            🗑️ Eliminar
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
 
 <!-- 🔹 Modal Reutilizable -->
 <div class="modal fade" id="modalCliente" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content border-0 shadow">
             <div class="modal-header bg-dark text-white">
                 <h5 class="modal-title" id="tituloModal">Cliente</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -88,9 +86,8 @@
     </div>
 </div>
 
-<!-- 🔹 Sección de Scripts -->
+<!-- 🔹 Scripts -->
 @section Scripts {
-    <script src="~/js/clientes.js"></script>
-     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="~/js/clientes.js?v=@DateTime.Now.Ticks"></script>
 }

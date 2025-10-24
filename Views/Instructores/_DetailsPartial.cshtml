@@ -1,4 +1,4 @@
-@* @model LiberiaDriveMVC.Models.Instructor
+@model LiberiaDriveMVC.Models.Instructor
 @{
     Layout = null;
 }
@@ -8,7 +8,6 @@
 </h5>
 <hr />
 
-<!-- 🔹 Información del Instructor -->
 <div class="card shadow-sm border-0">
     <div class="card-body">
         <ul class="list-group list-group-flush">
@@ -16,18 +15,24 @@
                 <strong>👤 Nombre:</strong> @Model.Nombre @Model.Apellidos
             </li>
 
-            <div class="form-check mb-3">
-    <input type="checkbox" name="Estado" class="form-check-input" value="true"
-           @(Model.Estado == true ? "checked" : "") />
-    <input type="hidden" name="Estado" value="false" />
-    <label class="form-check-label">Activo</label>
-</div>
+            <li class="list-group-item d-flex align-items-center justify-content-between">
+    <strong>📌 Estado:</strong>
+    <div class="form-check form-switch m-0">
+        <input class="form-check-input"
+               type="checkbox"
+               id="estadoSwitch"
+               @(Model.Estado == true ? "checked" : "")
+               disabled />
+        <label class="form-check-label ms-2" for="estadoSwitch">
+            @(Model.Estado == true ? "Activo" : "Inactivo")
+        </label>
+    </div>
+</li>
 
         </ul>
     </div>
 </div>
 
-<!-- 🔹 Botón de cierre -->
 <div class="text-end mt-3">
     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
         <i class="bi bi-x-circle"></i> Cerrar
@@ -35,5 +40,17 @@
 </div>
 
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-} *@
+<script>
+    // 🟢 Efecto visual dinámico
+    document.addEventListener("DOMContentLoaded", function () {
+        const chk = document.getElementById("estadoSwitch");
+        const label = chk.nextElementSibling;
+
+        if (chk.checked) {
+            label.classList.add("text-success", "fw-bold");
+        } else {
+            label.classList.add("text-danger", "fw-bold");
+        }
+    });
+</script>
+}
