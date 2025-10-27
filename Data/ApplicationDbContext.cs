@@ -106,9 +106,11 @@ public partial class ApplicationDbContext : DbContext
                 .HasForeignKey(d => d.IdCliente)
                 .HasConstraintName("FK__FeedbackC__IdCli__5DCAEF64");
 
-            entity.HasOne(d => d.IdCursoNavigation).WithMany(p => p.FeedbackCliente)
+           entity.HasOne(d => d.IdCursoNavigation)
+                .WithMany() // ✅ sin navegación inversa
                 .HasForeignKey(d => d.IdCurso)
-                .HasConstraintName("FK__FeedbackC__IdCur__5EBF139D");
+                .HasConstraintName("FK__Inscripci__IdCur__398D8EEE");
+
         });
 
         modelBuilder.Entity<HorarioInstructor>(entity =>
@@ -135,9 +137,11 @@ public partial class ApplicationDbContext : DbContext
                 .HasForeignKey(d => d.IdCliente)
                 .HasConstraintName("FK__Inscripci__IdCli__38996AB5");
 
-            entity.HasOne(d => d.IdCursoNavigation).WithMany(p => p.InscripcionCurso)
-                .HasForeignKey(d => d.IdCurso)
-                .HasConstraintName("FK__Inscripci__IdCur__398D8EEE");
+           entity.HasOne(d => d.IdCursoNavigation)
+            .WithMany()
+            .HasForeignKey(d => d.IdCurso)
+            .HasConstraintName("FK__Inscripci__IdCur__398D8EEE");
+ 
         });
 
         modelBuilder.Entity<Instructor>(entity =>
