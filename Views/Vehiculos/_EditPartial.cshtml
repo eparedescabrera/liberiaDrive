@@ -25,16 +25,24 @@
         <span asp-validation-for="Modelo" class="text-danger"></span>
     </div>
 
+    <!-- 🔹 Placa -->
+    <div class="mb-3">
+        <label asp-for="Placa" class="form-label">Placa</label>
+        <input asp-for="Placa" class="form-control text-uppercase" placeholder="Ej: ABC123" required maxlength="10" />
+        <span asp-validation-for="Placa" class="text-danger"></span>
+    </div>
+
     <!-- 🔹 Transmisión -->
     <div class="mb-3">
-        <label asp-for="Transmision" class="form-label">Transmisión</label>
-        <select asp-for="Transmision" class="form-select" required>
-            <option value="">-- Seleccione tipo de transmisión --</option>
-            <option value="Automática" selected="@(Model.Transmision == "Automática" ? "selected" : null)">Automática</option>
-            <option value="Manual" selected="@(Model.Transmision == "Manual" ? "selected" : null)">Manual</option>
-        </select>
-        <span asp-validation-for="Transmision" class="text-danger"></span>
-    </div>
+    <label asp-for="Transmision" class="form-label">Transmisión</label>
+    <select asp-for="Transmision" class="form-select" required>
+        <option value="">-- Seleccione tipo de transmisión --</option>
+        <option value="Automática">Automática</option>
+        <option value="Manual">Manual</option>
+    </select>
+    <span asp-validation-for="Transmision" class="text-danger"></span>
+</div>
+
 
     <!-- 🔹 Estado -->
     <div class="form-check mb-3">
@@ -63,14 +71,10 @@
         // ✅ Envío del formulario con AJAX + SweetAlert
         $(document).off("submit", "#formEditarVehiculo").on("submit", "#formEditarVehiculo", function (e) {
             e.preventDefault();
-
-            const form = $(this);
-            const data = form.serialize();
-
             $.ajax({
                 url: "/Vehiculos/Edit",
                 type: "POST",
-                data: data,
+                data: $(this).serialize(),
                 success: function (resp) {
                     if (resp.success) {
                         Swal.fire({
@@ -90,6 +94,11 @@
                     Swal.fire("Error", "No se pudo actualizar el vehículo.", "error");
                 }
             });
+        });
+
+        // 🔹 Auto-mayúsculas para Placa
+        $('input[name="Placa"]').on('input', function () {
+            this.value = this.value.toUpperCase();
         });
     </script>
 }

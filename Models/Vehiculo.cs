@@ -18,10 +18,16 @@ namespace LiberiaDriveMVC.Models
         public string Modelo { get; set; } = null!;
 
         [Required(ErrorMessage = "La transmisión es obligatoria.")]
-        [RegularExpression(@"^(Manual|Automática|Automatica)$", ErrorMessage = "Debe ser 'Manual' o 'Automática'.")]
+        [RegularExpression(@"^(Manual|Automática|Automatica)$", 
+            ErrorMessage = "Debe seleccionar 'Manual' o 'Automática'.")]
         public string Transmision { get; set; } = null!;
 
-        // ✅ Cambiado de bool? a bool para evitar errores en Razor (checkbox)
+        [Required(ErrorMessage = "La placa es obligatoria.")]
+        [StringLength(20, MinimumLength = 3, ErrorMessage = "Debe tener entre 3 y 20 caracteres.")]
+        [RegularExpression(@"^[A-Za-z0-9\-]+$", ErrorMessage = "Solo puede contener letras, números y guiones.")]
+        public string Placa { get; set; } = null!;
+
+        // ✅ Bool normal para evitar errores en checkbox
         public bool Estado { get; set; } = true;
 
         // Relaciones

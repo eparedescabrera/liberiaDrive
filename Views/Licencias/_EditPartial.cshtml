@@ -1,0 +1,21 @@
+@model LiberiaDriveMVC.Models.Licencia
+@{
+    Layout = null;
+}
+
+<h5 class="fw-bold text-warning mb-3">✏️ Editar Licencia</h5>
+<hr />
+
+<form id="formEditarLicencia">
+    
+
+    <div class="mb-3">
+        <label asp-for="TipoLicencia" class="form-label"></label>
+        <input asp-for="TipoLicencia" class="form-control" required />
+    </div>
+
+    <div class="text-end">
+        <button type="submit" class="btn btn-warning text-white">Actualizar</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+    </div>
+</form>

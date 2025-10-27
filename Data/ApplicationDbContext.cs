@@ -42,6 +42,8 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<Vehiculo> Vehiculo { get; set; }
     public virtual DbSet<TokenRecuperacion> TokenRecuperacion { get; set; }
+    public virtual DbSet<InstructorLicencia> InstructorLicencias { get; set; }
+
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -165,6 +167,7 @@ public partial class ApplicationDbContext : DbContext
                     });
         });
 
+
         modelBuilder.Entity<Licencia>(entity =>
         {
             entity.HasKey(e => e.IdLicencia).HasName("PK__Licencia__0F8D118DCFD19B11");
@@ -173,6 +176,21 @@ public partial class ApplicationDbContext : DbContext
                 .HasMaxLength(20)
                 .IsUnicode(false);
         });
+        modelBuilder.Entity<InstructorLicencia>(entity =>
+{
+    entity.HasKey(e => new { e.IdInstructor, e.IdLicencia });
+
+    entity.HasOne(e => e.Instructor)
+        .WithMany(i => i.InstructorLicencias)
+        .HasForeignKey(e => e.IdInstructor)
+        .OnDelete(DeleteBehavior.Cascade);
+
+    entity.HasOne(e => e.Licencia)
+        .WithMany(l => l.InstructorLicencias)
+        .HasForeignKey(e => e.IdLicencia)
+        .OnDelete(DeleteBehavior.Cascade);
+});
+
 
         modelBuilder.Entity<MantenimientoVehiculo>(entity =>
         {

@@ -1,0 +1,104 @@
+@model LiberiaDriveMVC.Models.Vehiculo
+@{
+    Layout = null;
+}
+
+<h5 class="fw-bold text-danger mb-3">
+    <i class="bi bi-trash3"></i> Eliminar Vehículo
+</h5>
+<hr />
+
+<div class="alert alert-warning text-center shadow-sm">
+    ⚠️ <strong>Atención:</strong> Esta acción eliminará el registro de forma permanente.<br />
+    <small class="text-muted">No podrás recuperar los datos una vez confirmada la eliminación.</small>
+</div>
+
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                <strong>🚘 Marca:</strong> @Model.Marca
+            </li>
+            <li class="list-group-item">
+                <strong>🔤 Modelo:</strong> @Model.Modelo
+            </li>
+            <li class="list-group-item">
+                <strong>⚙️ Transmisión:</strong> @Model.Transmision
+            </li>
+            <li class="list-group-item">
+                <strong>🔖 Placa:</strong> @Model.Placa
+            </li>
+            <li class="list-group-item">
+                <strong>📌 Estado:</strong>
+                @if (Model.Estado)
+                {
+                    <span class="badge bg-success">Activo</span>
+                }
+                else
+                {
+                    <span class="badge bg-danger">Inactivo</span>
+                }
+            </li>
+        </ul>
+    </div>
+</div>
+
+<form id="formEliminarVehiculo" method="post">
+    <input type="hidden" id="IdVehiculo" value="@Model.IdVehiculo" />
+
+    <div class="text-end">
+        <button type="submit" class="btn btn-danger px-4">
+            <i class="bi bi-trash3"></i> Eliminar
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle"></i> Cancelar
+        </button>
+    </div>
+</form>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).off("submit", "#formEliminarVehiculo").on("submit", "#formEliminarVehiculo", function (e) {
+            e.preventDefault();
+            const id = $("#IdVehiculo").val();
+
+            Swal.fire({
+                title: "¿Eliminar vehículo?",
+                text: "Esta acción no se puede deshacer.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#6c757d",
+                confirmButtonText: "Sí, eliminar",
+                cancelButtonText: "Cancelar"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "/Vehiculos/DeleteConfirmed",
+                        type: "POST",
+                        data: { IdVehiculo: id },
+                        success: function (resp) {
+                            if (resp.success) {
+                                Swal.fire({
+                                    icon: "success",
+                                    title: "Vehículo eliminado",
+                                    text: resp.message,
+                                    timer: 1800,
+                                    showConfirmButton: false
+                                });
+                                $("#modalVehiculo").modal("hide");
+                                setTimeout(() => location.reload(), 1500);
+                            } else {
+                                Swal.fire("Error", resp.message, "error");
+                            }
+                        },
+                        error: function () {
+                            Swal.fire("Error", "No se pudo eliminar el vehículo.", "error");
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

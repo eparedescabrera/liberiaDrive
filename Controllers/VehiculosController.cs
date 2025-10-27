@@ -18,55 +18,82 @@ namespace LiberiaDriveMVC.Controllers
         // ======================
         // LISTAR
         // ======================
-        public IActionResult Index()
-        {
-            var vehiculos = _db.EjecutarSPDataTable("sp_ListarVehiculos", null);
-            ViewBag.Vehiculos = vehiculos;
-            return View();
-        }
+       public IActionResult Index(string searchPlaca = "")
+{
+    var parametros = new Dictionary<string, object>();
+
+    if (!string.IsNullOrWhiteSpace(searchPlaca))
+        parametros.Add("@Placa", searchPlaca.Trim());
+
+    var vehiculos = _db.EjecutarSPDataTable(
+        string.IsNullOrWhiteSpace(searchPlaca)
+        ? "sp_ListarVehiculos"
+        : "sp_BuscarVehiculosPorPlaca",
+        parametros.Count > 0 ? parametros : null
+    );
+
+    ViewBag.SearchPlaca = searchPlaca;
+    ViewBag.Vehiculos = vehiculos;
+
+    return View();
+}
+
 
         // ======================
         // CREAR (GET)
         // ======================
         [Authorize(Roles = "Administrador")]
+        
         public IActionResult Create()
         {
             var vehiculo = new Vehiculo { Estado = true };
-
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                return PartialView("_CreatePartial", vehiculo);
-
-            return View(vehiculo);
+            return PartialView("_CreatePartial", vehiculo);
         }
 
         // ======================
         // CREAR (POST)
         // ======================
         [HttpPost]
-        [Authorize(Roles = "Administrador")]
-        public IActionResult Create([FromForm] Vehiculo model)
+[Authorize(Roles = "Administrador")]
+public IActionResult Create([FromForm] Vehiculo model)
         {
-            if (!ModelState.IsValid)
-                return PartialView("_CreatePartial", model);
+    // Verificar si existe una placa igual
+var placaParams = new Dictionary<string, object> { { "@Placa", model.Placa.Trim() } };
+var existePlaca = _db.EjecutarSPDataTable("SELECT 1 FROM Vehiculo WHERE Placa = @Placa", placaParams, true);
 
-            var parametros = new Dictionary<string, object>
-            {
-                { "@Marca", model.Marca.Trim() },
-                { "@Modelo", model.Modelo.Trim() },
-                { "@Transmision", model.Transmision?.Trim() },
-                { "@Estado", model.Estado }
-            };
+if (existePlaca.Rows.Count > 0)
+{
+    return Json(new
+    {
+        success = false,
+        message = "⚠️ Ya existe un vehículo registrado con esa placa."
+    });
+}
 
-            try
-            {
-                _db.EjecutarSPNonQuery("sp_InsertarVehiculo", parametros);
-                return Json(new { success = true });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = ex.Message });
-            }
-        }
+    try
+    {
+        if (!ModelState.IsValid)
+            return Json(new { success = false, message = "Datos inválidos en el formulario." });
+
+        var parametros = new Dictionary<string, object>
+        {
+            { "@Marca", model.Marca.Trim() },
+            { "@Modelo", model.Modelo.Trim() },
+            { "@Transmision", model.Transmision.Trim() },
+            { "@Estado", model.Estado },
+            { "@Placa", model.Placa.Trim() }
+        };
+
+        _db.EjecutarSPNonQuery("sp_InsertarVehiculo", parametros);
+
+        return Json(new { success = true, message = "Vehículo guardado correctamente." });
+    }
+    catch (Exception ex)
+    {
+        return Json(new { success = false, message = ex.Message });
+    }
+}
+
 
         // ======================
         // EDITAR (GET)
@@ -78,21 +105,19 @@ namespace LiberiaDriveMVC.Controllers
             var row = dt.AsEnumerable().FirstOrDefault(r => Convert.ToInt32(r["IdVehiculo"]) == id);
 
             if (row == null)
-                return Content("<div class='alert alert-warning text-center'>⚠️ Vehículo no encontrado.</div>", "text/html");
+                return Content("❌ Vehículo no encontrado.", "text/html");
 
             var vehiculo = new Vehiculo
             {
-                IdVehiculo = Convert.ToInt32(row["IdVehiculo"]),
-                Marca = row["Marca"].ToString(),
-                Modelo = row["Modelo"].ToString(),
-                Transmision = row["Transmision"].ToString(),
-                Estado = Convert.ToBoolean(row["Estado"])
+                IdVehiculo = (int)row["IdVehiculo"],
+                Marca = row["Marca"].ToString()!,
+                Modelo = row["Modelo"].ToString()!,
+                Transmision = row["Transmision"].ToString()!,
+                Estado = Convert.ToBoolean(row["Estado"]),
+                Placa = row["Placa"].ToString()!
             };
 
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                return PartialView("_EditPartial", vehiculo);
-
-            return View(vehiculo);
+            return PartialView("_EditPartial", vehiculo);
         }
 
         // ======================
@@ -105,10 +130,11 @@ namespace LiberiaDriveMVC.Controllers
             var parametros = new Dictionary<string, object>
             {
                 { "@IdVehiculo", model.IdVehiculo },
-                { "@Marca", model.Marca.Trim() },
-                { "@Modelo", model.Modelo.Trim() },
-                { "@Transmision", model.Transmision?.Trim() },
-                { "@Estado", model.Estado }
+                { "@Marca", model.Marca },
+                { "@Modelo", model.Modelo },
+                { "@Transmision", model.Transmision },
+                { "@Estado", model.Estado },
+                { "@Placa", model.Placa }
             };
 
             try
@@ -131,22 +157,21 @@ namespace LiberiaDriveMVC.Controllers
             var row = dt.AsEnumerable().FirstOrDefault(r => Convert.ToInt32(r["IdVehiculo"]) == id);
 
             if (row == null)
-                return Content("<div class='alert alert-warning text-center'>⚠️ Vehículo no encontrado.</div>", "text/html");
+                return Content("❌ Vehículo no encontrado.", "text/html");
 
             var vehiculo = new Vehiculo
             {
-                IdVehiculo = Convert.ToInt32(row["IdVehiculo"]),
-                Marca = row["Marca"].ToString(),
-                Modelo = row["Modelo"].ToString(),
-                Transmision = row["Transmision"].ToString(),
-                Estado = Convert.ToBoolean(row["Estado"])
+                IdVehiculo = (int)row["IdVehiculo"],
+                Marca = row["Marca"].ToString()!,
+                Modelo = row["Modelo"].ToString()!,
+                Transmision = row["Transmision"].ToString()!,
+                Estado = Convert.ToBoolean(row["Estado"]),
+                Placa = row["Placa"].ToString()!
             };
 
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                return PartialView("_DetailsPartial", vehiculo);
-
-            return View(vehiculo);
+            return PartialView("_DetailsPartial", vehiculo);
         }
+        
 
         // ======================
         // ELIMINAR
@@ -159,21 +184,19 @@ namespace LiberiaDriveMVC.Controllers
             var row = dt.AsEnumerable().FirstOrDefault(r => Convert.ToInt32(r["IdVehiculo"]) == id);
 
             if (row == null)
-                return Content("<div class='alert alert-warning text-center'>⚠️ Vehículo no encontrado.</div>", "text/html");
+                return Content("❌ Vehículo no encontrado.", "text/html");
 
             var vehiculo = new Vehiculo
             {
-                IdVehiculo = Convert.ToInt32(row["IdVehiculo"]),
-                Marca = row["Marca"].ToString(),
-                Modelo = row["Modelo"].ToString(),
-                Transmision = row["Transmision"].ToString(),
-                Estado = Convert.ToBoolean(row["Estado"])
+                IdVehiculo = (int)row["IdVehiculo"],
+                Marca = row["Marca"].ToString()!,
+                Modelo = row["Modelo"].ToString()!,
+                Transmision = row["Transmision"].ToString()!,
+                Estado = Convert.ToBoolean(row["Estado"]),
+                Placa = row["Placa"].ToString()!
             };
 
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                return PartialView("_DeletePartial", vehiculo);
-
-            return View(vehiculo);
+            return PartialView("_DeletePartial", vehiculo);
         }
 
         [HttpPost]
@@ -182,15 +205,9 @@ namespace LiberiaDriveMVC.Controllers
         {
             var parametros = new Dictionary<string, object> { { "@IdVehiculo", IdVehiculo } };
 
-            try
-            {
-                _db.EjecutarSPNonQuery("sp_EliminarVehiculo", parametros);
-                return Json(new { success = true, message = "Vehículo eliminado correctamente." });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = ex.Message });
-            }
+            _db.EjecutarSPNonQuery("sp_EliminarVehiculo", parametros);
+            return Json(new { success = true });
         }
+        
     }
 }

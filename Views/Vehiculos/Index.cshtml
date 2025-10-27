@@ -4,85 +4,94 @@
 }
 
 <h2 class="fw-bold text-center my-3">🚗 Gestión de Vehículos</h2>
+<!-- 🔍 Buscador -->
+<form class="d-flex justify-content-end mb-3" method="get">
+    <input type="text"
+           name="searchPlaca"
+           value="@ViewBag.SearchPlaca"
+           class="form-control w-25 me-2"
+           placeholder="🔎 Buscar por placa..."
+           autocomplete="off" />
+    <button class="btn btn-primary">Buscar</button>
+
+    @if(!string.IsNullOrWhiteSpace(ViewBag.SearchPlaca))
+    {
+        <a href="/Vehiculos/Index" class="btn btn-secondary ms-2">Limpiar</a>
+    }
+</form>
 
 <!-- 🔹 Botón Nuevo Vehículo -->
 <div class="text-end mb-3">
-    <button class="btn btn-primary shadow-sm" onclick="abrirModalCrear()">
-        <i class="bi bi-plus-circle"></i> Nuevo Vehículo
+    <button class="btn btn-primary" onclick="abrirModalCrear()">
+        ➕ Nuevo Vehículo
     </button>
 </div>
 
-<!-- 🔹 Tabla Responsive -->
-<div class="table-responsive shadow-sm">
-    <table class="table table-striped table-bordered align-middle mb-0">
-        <thead class="table-dark text-center">
+<!-- 🔹 Tabla Responsiva Mejorada -->
+<div class="table-responsive">
+    <table class="table table-hover align-middle text-center">
+        <thead class="table-dark">
             <tr>
                 <th>Marca</th>
                 <th>Modelo</th>
                 <th>Transmisión</th>
                 <th>Estado</th>
-                <th>Acciones</th>
+                <th>Placa</th>
+                <th class="text-center">Acciones</th>
             </tr>
         </thead>
         <tbody>
-            @if (ViewBag.Vehiculos != null && ViewBag.Vehiculos.Rows.Count > 0)
-            {
-                foreach (System.Data.DataRow row in ViewBag.Vehiculos.Rows)
-                {
-                    bool estado = Convert.ToBoolean(row["Estado"]);
+        @foreach (System.Data.DataRow row in ViewBag.Vehiculos.Rows)
+        {
+            <tr class="@(Convert.ToBoolean(row["Estado"]) ? "" : "table-secondary")">
+                <td>@row["Marca"]</td>
+                <td>@row["Modelo"]</td>
+                <td>@row["Transmision"]</td>
+                <td>
+                    @if (Convert.ToBoolean(row["Estado"]))
+                    { <span class="badge bg-success">Activo</span> }
+                    else
+                    { <span class="badge bg-danger">Inactivo</span> }
+                </td>
+                <td>@row["Placa"]</td>
+                <td>
+                    <div class="d-flex flex-wrap gap-1 justify-content-center">
 
-                    <tr class="@(estado ? "" : "table-secondary")">
-                        <td>@row["Marca"]</td>
-                        <td>@row["Modelo"]</td>
-                        <td>@row["Transmision"]</td>
-                        <td class="text-center">
-                            @if (estado)
-                            {
-                                <span class="badge bg-success">Activo</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-danger">Inactivo</span>
-                            }
-                        </td>
-                        <td class="text-center">
-                            <button class="btn btn-warning btn-sm text-white"
-                                    onclick="abrirModalEditar(@row["IdVehiculo"])">
-                                <i class="bi bi-pencil-square"></i> Editar
-                            </button>
+                        <button class="btn btn-warning btn-sm"
+                                onclick="abrirModalEditar(@row["IdVehiculo"])">
+                            <i class="bi bi-pencil-square"></i>
+                            <span class="d-none d-md-inline"> Editar</span>
+                        </button>
 
-                            <button class="btn btn-info btn-sm text-white"
-                                    onclick="abrirModalDetalles(@row["IdVehiculo"])">
-                                <i class="bi bi-eye"></i> Ver
-                            </button>
+                        <button class="btn btn-info btn-sm text-white"
+                                onclick="abrirModalDetalles(@row["IdVehiculo"])">
+                            <i class="bi bi-search"></i>
+                            <span class="d-none d-md-inline"> Ver</span>
+                        </button>
 
-                            <button class="btn btn-danger btn-sm"
-                                    onclick="abrirModalEliminar(@row["IdVehiculo"])">
-                                <i class="bi bi-trash3"></i> Eliminar
-                            </button>
-                        </td>
-                    </tr>
-                }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="5" class="text-center text-muted py-3">
-                        <i class="bi bi-info-circle"></i> No hay vehículos registrados.
-                    </td>
-                </tr>
-            }
+                        <button class="btn btn-danger btn-sm"
+                                onclick="abrirModalEliminar(@row["IdVehiculo"])">
+                            <i class="bi bi-trash"></i>
+                            <span class="d-none d-md-inline"> Eliminar</span>
+                        </button>
+
+                    </div>
+                </td>
+            </tr>
+        }
         </tbody>
     </table>
 </div>
 
-<!-- 🔹 Modal Reutilizable -->
+
+<!-- 🔹 Modal Genérico -->
 <div class="modal fade" id="modalVehiculo" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
+        <div class="modal-content shadow-lg">
             <div class="modal-header bg-dark text-white">
                 <h5 class="modal-title" id="tituloModal">Vehículo</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                <button type="button" class="btn-close btn-close-white"
+                        data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body" id="contenidoModal">
                 <div class="text-center py-4">
@@ -95,8 +104,9 @@
     </div>
 </div>
 
+
 <!-- 🔹 Scripts -->
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="~/js/vehiculo.js?v=@DateTime.Now.Ticks"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 }

@@ -3,50 +3,46 @@
     Layout = null;
 }
 
-<h5 class="fw-bold text-primary mb-3">🚗 Registrar Vehículo</h5>
+<h5 class="fw-bold text-primary mb-3">
+    <i class="bi bi-car-front-fill"></i> Registrar Vehículo
+</h5>
 <hr />
 
-<form id="formCrearVehiculo" method="post">
-    <!-- 🔹 Marca -->
+<form id="formCrearVehiculo">
     <div class="mb-3">
-        <label asp-for="Marca" class="form-label">Marca</label>
+        <label asp-for="Marca" class="form-label"></label>
         <input asp-for="Marca" class="form-control" placeholder="Ej: Toyota" required />
         <span asp-validation-for="Marca" class="text-danger"></span>
     </div>
 
-    <!-- 🔹 Modelo -->
     <div class="mb-3">
-        <label asp-for="Modelo" class="form-label">Modelo</label>
+        <label asp-for="Modelo" class="form-label"></label>
         <input asp-for="Modelo" class="form-control" placeholder="Ej: Corolla" required />
         <span asp-validation-for="Modelo" class="text-danger"></span>
     </div>
 
-    <!-- 🔹 Transmisión -->
     <div class="mb-3">
-        <label asp-for="Transmision" class="form-label">Transmisión</label>
+        <label class="form-label">Transmisión</label>
         <select asp-for="Transmision" class="form-select" required>
-            <option value="">-- Seleccione tipo de transmisión --</option>
-            <option value="Automática">Automática</option>
+            <option value="">Seleccione...</option>
             <option value="Manual">Manual</option>
+            <option value="Automática">Automática</option>
         </select>
         <span asp-validation-for="Transmision" class="text-danger"></span>
     </div>
-
-    <!-- 🔹 Estado -->
     <div class="form-check mb-3">
-        <input type="checkbox" name="Estado" class="form-check-input" value="true" checked />
+        <input asp-for="Estado" class="form-check-input" type="checkbox" value="true" checked />
         <input type="hidden" name="Estado" value="false" />
         <label class="form-check-label">Activo</label>
     </div>
-
-    <!-- 🔹 Botones -->
+    <div class="mb-3">
+        <label asp-for="Placa" class="form-label"></label>
+        <input asp-for="Placa" class="form-control" placeholder="Ej: ABC-123" required />
+        <span asp-validation-for="Placa" class="text-danger"></span>
+    </div>
     <div class="text-end">
-        <button type="submit" class="btn btn-success px-4">
-            <i class="bi bi-save"></i> Guardar
-        </button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-            <i class="bi bi-x-circle"></i> Cancelar
-        </button>
+        <button type="submit" class="btn btn-success px-4">Guardar</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
     </div>
 </form>
 

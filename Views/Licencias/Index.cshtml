@@ -1,0 +1,67 @@
+@{
+    ViewData["Title"] = "Gestión de Licencias";
+    Layout = "_AdminLayout";
+}
+
+<h2 class="fw-bold text-center my-3">Gestión de Licencias</h2>
+
+<!-- 🔹 Botón Nuevo -->
+<div class="text-end mb-3">
+    <button class="btn btn-primary" onclick="abrirModalCrear()">
+        ➕ Nueva Licencia
+    </button>
+</div>
+
+<!-- 🔹 Tabla -->
+<div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle text-center">
+        <thead class="table-dark">
+            <tr>
+                
+                <th>Tipo Licencia</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (System.Data.DataRow row in ViewBag.Licencias.Rows)
+            {
+                <tr>
+            
+                    <td>@row["TipoLicencia"]</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm text-dark" onclick="abrirModalEditar(@row["IdLicencia"])">
+                            ✏️ Editar
+                        </button>
+
+                        <button class="btn btn-danger btn-sm" onclick="abrirModalEliminar(@row["IdLicencia"])">
+                            🗑️ Eliminar
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- 🔹 Modal Reutilizable -->
+<div class="modal fade" id="modalLicencia" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title" id="tituloModal">Licencia</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body" id="contenidoModal">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/licencias.js?v=@DateTime.Now.Ticks"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+}

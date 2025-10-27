@@ -22,6 +22,8 @@ namespace LiberiaDriveMVC.Models
         public bool? Estado { get; set; } = true;
 
         // 🔹 Relaciones (navegación con otras tablas)
+        public virtual ICollection<InstructorLicencia> InstructorLicencias { get; set; } = new List<InstructorLicencia>();
+
         public virtual ICollection<HorarioInstructor> HorarioInstructor { get; set; } = new List<HorarioInstructor>();
 
         public virtual ICollection<ResultadoExamen> ResultadoExamen { get; set; } = new List<ResultadoExamen>();
