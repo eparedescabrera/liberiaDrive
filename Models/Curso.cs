@@ -1,19 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace LiberiaDriveMVC.Models;
-
-public partial class Curso
+namespace LiberiaDriveMVC.Models
 {
-    public int IdCurso { get; set; }
+    public class Curso
+    {
+        [Key]
+        public int IdCurso { get; set; }
 
-    public string TipoCurso { get; set; } = null!;
+        [Required(ErrorMessage = "El tipo de curso es obligatorio")]
+        [StringLength(50)]
+        [Display(Name = "Tipo de Curso")]
+        public string TipoCurso { get; set; } = string.Empty;
 
-    public int Duracion { get; set; }
+        [Display(Name = "Duración (horas)")]
+        [Range(1, 2000, ErrorMessage = "La duración debe ser mayor a 0")]
+        public int Duracion { get; set; }
 
-    public decimal Costo { get; set; }
-
-    public virtual ICollection<FeedbackCliente> FeedbackCliente { get; set; } = new List<FeedbackCliente>();
-
-    public virtual ICollection<InscripcionCurso> InscripcionCurso { get; set; } = new List<InscripcionCurso>();
+        [Column(TypeName = "decimal(10, 2)")]
+        [Range(0, 9999999, ErrorMessage = "El costo debe ser un valor positivo")]
+        [Display(Name = "Costo (₡)")]
+        public decimal Costo { get; set; }
+    }
 }

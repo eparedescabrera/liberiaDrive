@@ -1,0 +1,36 @@
+@model LiberiaDriveMVC.Models.Curso
+@{
+    ViewData["Title"] = "Eliminar Curso";
+}
+
+<div class="container mt-5 col-md-6">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-danger text-white text-center fw-bold">
+            <i class="bi bi-trash"></i> Confirmar Eliminación
+        </div>
+        <div class="card-body text-center">
+            <p class="fw-semibold">¿Seguro que deseas eliminar este curso?</p>
+            <hr />
+            <dl class="row">
+                <dt class="col-sm-4">Tipo:</dt>
+                <dd class="col-sm-8">@Model.TipoCurso</dd>
+
+                <dt class="col-sm-4">Duración:</dt>
+                <dd class="col-sm-8">@Model.Duracion horas</dd>
+
+                <dt class="col-sm-4">Costo:</dt>
+                <dd class="col-sm-8">₡@Model.Costo</dd>
+            </dl>
+
+            <form asp-action="Delete">
+                <input type="hidden" asp-for="IdCurso" />
+                <button type="submit" class="btn btn-danger me-2">
+                    <i class="bi bi-check2-circle"></i> Eliminar
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> Cancelar
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
