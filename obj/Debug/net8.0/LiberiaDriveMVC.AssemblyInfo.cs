@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LiberiaDriveMVC")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f4290f244aeebd515df7e5e8b7cc4732170f8e47")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+26c673ff458c2d1fa38200719497c696257c4160")]
 [assembly: System.Reflection.AssemblyProductAttribute("LiberiaDriveMVC")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LiberiaDriveMVC")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

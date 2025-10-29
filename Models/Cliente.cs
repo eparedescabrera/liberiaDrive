@@ -31,7 +31,10 @@ namespace LiberiaDriveMVC.Models
         // =====================================================
         // 🔗 RELACIONES (NAVEGACIÓN)
         // =====================================================
-        public virtual ICollection<Cita> Cita { get; set; } = new List<Cita>();
+
+        public virtual ICollection<Cita> Cita { get; set; } = new HashSet<Cita>();
+
+       // public virtual ICollection<Cita> Cita { get; set; } = new List<Cita>();
 
         public virtual ICollection<FeedbackCliente> FeedbackCliente { get; set; } = new List<FeedbackCliente>();
 

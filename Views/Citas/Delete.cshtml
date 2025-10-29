@@ -1,0 +1,35 @@
+@model LiberiaDriveMVC.Models.Cita
+@{  Layout = "_AdminLayout";
+    ViewData["Title"] = "Eliminar Cita";
+}
+
+<h2 class="fw-bold text-danger mb-4">Eliminar Cita</h2>
+
+<div class="card shadow-sm p-4">
+    <p>¿Estás seguro de que deseas eliminar esta cita?</p>
+
+    <dl class="row">
+        <dt class="col-sm-3">ID</dt>
+        <dd class="col-sm-9">@Model.IdCita</dd>
+
+        <dt class="col-sm-3">Cliente</dt>
+        <dd class="col-sm-9">@Model.IdCliente</dd>
+
+        <dt class="col-sm-3">Tipo de Examen</dt>
+        <dd class="col-sm-9">@Model.TipoExamen</dd>
+
+        <dt class="col-sm-3">Fecha</dt>
+        <dd class="col-sm-9">@Model.FechaCita.ToString("dd/MM/yyyy HH:mm")</dd>
+
+        <dt class="col-sm-3">Estado</dt>
+        <dd class="col-sm-9">@Model.Estado</dd>
+    </dl>
+
+    <form asp-action="DeleteConfirmed" method="post">
+        <input type="hidden" asp-for="IdCita" />
+        <div class="d-flex justify-content-between">
+            <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-danger">Eliminar</button>
+        </div>
+    </form>
+</div>

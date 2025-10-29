@@ -1,0 +1,58 @@
+@{
+    Layout = "_AdminLayout";
+}
+
+
+@model IEnumerable<LiberiaDriveMVC.Models.Cita>
+@{
+    ViewData["Title"] = "Citas";
+}
+
+
+
+<h2 class="fw-bold text-primary mb-4">Gestión de Citas</h2>
+
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-success">@TempData["Mensaje"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<p>
+    <a asp-action="Create" class="btn btn-success mb-3">
+        <i class="bi bi-plus-circle"></i> Agregar Cita
+    </a>
+</p>
+
+<table class="table table-bordered table-striped text-center align-middle">
+    <thead class="table-primary">
+        <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Tipo de Examen</th>
+            <th>Fecha de Cita</th>
+            <th>Estado</th>
+            <th style="width:170px">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var c in Model)
+    {
+        <tr>
+            <td>@c.IdCita</td>
+            <td>@c.IdCliente</td>
+            <td>@c.TipoExamen</td>
+            <td>@c.FechaCita.ToString("dd/MM/yyyy HH:mm")</td>
+            <td>@c.Estado</td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@c.IdCita" class="btn btn-warning btn-sm">Editar</a>
+                <a asp-action="Delete" asp-route-id="@c.IdCita" class="btn btn-danger btn-sm">Eliminar</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
