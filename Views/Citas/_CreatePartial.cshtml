@@ -1,0 +1,72 @@
+@model LiberiaDriveMVC.Models.Cita
+@{
+    Layout = null;
+}
+
+<h5 class="fw-bold text-primary mb-3">
+    🗓️ Registrar Nueva Cita
+</h5>
+<hr />
+
+<form id="formCrearCita">
+    <!-- Cliente con Select2 AJAX -->
+    <div class="mb-3">
+        <label for="clienteSelect" class="form-label fw-bold">Cliente</label>
+        <select id="clienteSelect" name="IdCliente" class="form-select" required style="width:100%;">
+            <option value="">Seleccione un cliente...</option>
+        </select>
+    </div>
+
+    <!-- Tipo de Examen -->
+    <div class="mb-3">
+        <label for="TipoExamen" class="form-label fw-bold">Tipo de Examen</label>
+        <select id="TipoExamen" name="TipoExamen" class="form-select" required>
+            <option value="">Seleccione...</option>
+            <option value="Teórico">Teórico</option>
+            <option value="Práctico">Práctico</option>
+        </select>
+    </div>
+
+    <!-- Fecha -->
+    <div class="mb-3">
+        <label for="FechaCita" class="form-label fw-bold">Fecha y hora de la cita</label>
+        <input type="datetime-local" id="FechaCita" name="FechaCita" class="form-control" required />
+    </div>
+
+    <div class="text-end mt-4">
+        <button type="submit" class="btn btn-success px-4">
+            <i class="bi bi-check-circle"></i> Guardar
+        </button>
+        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle"></i> Cancelar
+        </button>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        // ✅ Inicializar Select2 AJAX
+        $('#clienteSelect').select2({
+            theme: "bootstrap-5",
+            placeholder: "Buscar cliente...",
+            allowClear: true,
+            ajax: {
+                url: '/Citas/BuscarClientes',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return { term: params.term };
+                },
+                processResults: function (data) {
+                    return { results: data };
+                },
+                cache: true
+            },
+            language: {
+                inputTooShort: () => "Escriba al menos 1 carácter...",
+                noResults: () => "No se encontraron clientes.",
+                searching: () => "Buscando..."
+            }
+        });
+    </script>
+}
