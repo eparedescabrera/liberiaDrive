@@ -1,0 +1,40 @@
+@model LiberiaDriveMVC.Models.Curso
+
+<div class="container mt-3">
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <h5 class="fw-bold text-primary mb-3">
+                📘 Detalles del Curso
+            </h5>
+
+            <div class="row mb-2">
+                
+                <div class="col-md-6">
+                    <p><strong>Tipo de curso:</strong> @ViewBag.CursoTipo</p>
+                </div>
+            </div>
+
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <p><strong>Duración:</strong> @Model.Duracion horas</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Costo:</strong> ₡@Model.Costo.ToString("N2")</p>
+                </div>
+            </div>
+
+            <div class="alert alert-info mt-3 mb-1 p-2">
+                <small class="text-muted">
+                    💡 Estos son los datos registrados en el sistema.  
+                    Si deseas realizar cambios, usa la opción <strong>Editar</strong>.
+                </small>
+            </div>
+
+            <div class="d-flex justify-content-end mt-3">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

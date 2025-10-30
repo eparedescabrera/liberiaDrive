@@ -1,0 +1,66 @@
+@{
+    ViewData["Title"] = "Gestión de Cursos";
+    Layout = "_AdminLayout";
+}
+
+<h2 class="fw-bold mb-4 text-center">📚 Gestión de Cursos</h2>
+
+<div class="text-end mb-3">
+    <button class="btn btn-primary" onclick="abrirModalCrearCurso()">
+        <i class="bi bi-plus-circle"></i> Nuevo Curso
+    </button>
+</div>
+
+<table class="table table-hover table-bordered align-middle text-center">
+    <thead class="table-dark">
+        <tr>
+            <th>Tipo de Curso</th>
+            <th>Duración (hrs)</th>
+            <th>Costo (₡)</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(System.Data.DataRow row in ViewBag.Cursos.Rows)
+        {
+            <tr>
+                <td><span class="badge bg-info text-dark">@row["NombreCursoTipo"]</span></td>
+                <td>@row["Duracion"]</td>
+                <td>₡ @Convert.ToDecimal(row["Costo"]).ToString("N2")</td>
+                <td>
+                    <button class="btn btn-warning btn-sm text-white" onclick="abrirModalEditar(@row["IdCurso"])">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button class="btn btn-info btn-sm text-white" onclick="abrirModalDetalles(@row["IdCurso"])">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="abrirModalEliminar(@row["IdCurso"])">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Modal donde se cargan las vistas parciales -->
+<div class="modal fade" id="modalCurso" tabindex="-1">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 id="tituloModal" class="modal-title">Curso</h5>
+                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="contenidoModal">
+                <div class="text-center p-4">
+                    <div class="spinner-border text-primary"></div>
+                    <p>Cargando contenido...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/Cursos.js?v=@DateTime.Now.Ticks"></script>
+}

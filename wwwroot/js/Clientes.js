@@ -1,11 +1,24 @@
 // ================================
 // CLIENTES - FUNCIONES MODALES
 // ================================
+
+// 🧠 Helper: abre modal usando Bootstrap 5 (sin errores de backdrop)
+function mostrarModal() {
+    const modalElement = document.getElementById("modalCliente");
+    const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+    modal.show();
+}
+
+function cerrarModal() {
+    const modalElement = document.getElementById("modalCliente");
+    const modal = bootstrap.Modal.getInstance(modalElement);
+    if (modal) modal.hide();
+}
+
 // ================================
 // NUEVO CLIENTE (Modal AJAX + SweetAlert)
 // ================================
 function abrirModalCrear() {
-    // Cambiar título del modal y mostrar animación
     $("#tituloModal").text("Registrar Nuevo Cliente");
     $("#contenidoModal").html(`
         <div class="text-center py-4">
@@ -13,18 +26,15 @@ function abrirModalCrear() {
                 <span class="visually-hidden">Cargando...</span>
             </div>
         </div>`);
-    $("#modalCliente").modal("show");
+    mostrarModal();
 
-    // Cargar el formulario parcial desde el controlador
     $.get("/Clientes/Create")
         .done(function (data) {
-            // Insertar el partial cargado en el modal
             $("#contenidoModal").html(data);
 
-            // Manejar el evento Submit del formulario
             $("#formNuevoCliente").off("submit").on("submit", function (e) {
                 e.preventDefault();
-                var form = $(this);
+                const form = $(this);
 
                 $.ajax({
                     type: "POST",
@@ -32,38 +42,25 @@ function abrirModalCrear() {
                     data: form.serialize(),
                     success: function (response) {
                         if (response.success) {
-                            $("#modalCliente").modal("hide");
-
+                            cerrarModal();
                             Swal.fire({
                                 title: "✅ Cliente registrado",
                                 text: "El cliente se agregó correctamente.",
-                                icon: "success",
-                                confirmButtonText: "Aceptar"
-                            }).then(() => {
-                                location.reload(); // Recarga la tabla
-                            });
+                                icon: "success"
+                            }).then(() => location.reload());
                         } else {
-                            Swal.fire({
-                                title: "Error",
-                                text: response.message || "No se pudo registrar el cliente.",
-                                icon: "error"
-                            });
+                            Swal.fire("Error", response.message || "No se pudo registrar el cliente.", "error");
                         }
                     },
                     error: function () {
-                        Swal.fire({
-                            title: "Error inesperado",
-                            text: "No se pudo procesar la solicitud.",
-                            icon: "error"
-                        });
+                        Swal.fire("Error inesperado", "No se pudo procesar la solicitud.", "error");
                     }
                 });
             });
         })
-        .fail(function () {
-            $("#contenidoModal").html("<div class='text-danger text-center py-4'>❌ Error al cargar el formulario.</div>");
-        });
+        .fail(() => $("#contenidoModal").html("<div class='text-danger text-center py-4'>❌ Error al cargar el formulario.</div>"));
 }
+
 // ================================
 // DETALLES CLIENTE
 // ================================
@@ -75,80 +72,58 @@ function abrirModalDetalles(id) {
                 <span class="visually-hidden">Cargando...</span>
             </div>
         </div>`);
-    $("#modalCliente").modal("show");
+    mostrarModal();
 
     $.get("/Clientes/Details/" + id)
-        .done(function (data) {
-            $("#contenidoModal").html(data);
-        })
-        .fail(function () {
-            $("#contenidoModal").html("<div class='text-danger text-center py-4'>❌ Error al cargar los detalles.</div>");
-        });
+        .done((data) => $("#contenidoModal").html(data))
+        .fail(() => $("#contenidoModal").html("<div class='text-danger text-center py-4'>❌ Error al cargar los detalles.</div>"));
 }
 
-
-// 🔹 Abrir modal para editar
+// ================================
+// EDITAR CLIENTE
+// ================================
 function abrirModalEditar(id) {
     $("#tituloModal").text("Editar Cliente");
     $("#contenidoModal").html("<div class='text-center py-5 text-muted'>Cargando...</div>");
-    $("#modalCliente").modal("show");
+    mostrarModal();
 
     $.get("/Clientes/Edit/" + id)
         .done(function (data) {
             $("#contenidoModal").html(data);
 
-            // ✅ Reasignar el evento submit dentro del modal
             $("#formEditarCliente").off("submit").on("submit", function (e) {
                 e.preventDefault();
+                const form = $(this);
 
-                var form = $(this);
                 $.ajax({
                     type: "POST",
                     url: form.attr("action"),
                     data: form.serialize(),
                     success: function (response) {
                         if (response.success) {
-                            $("#modalCliente").modal("hide");
-                            setTimeout(() => {
-                                Swal.fire({
-                                    title: "Cliente actualizado",
-                                    text: "Los cambios se guardaron correctamente.",
-                                    icon: "success",
-                                    confirmButtonText: "Aceptar"
-                                }).then(() => location.reload());
-                            }, 400);
-
-                        } else {
-                            // ⚠️ Mostrar error devuelto
+                            cerrarModal();
                             Swal.fire({
-                                title: "Error",
-                                text: response.message || "No se pudo actualizar el cliente.",
-                                icon: "error",
-                                confirmButtonText: "Cerrar",
-                                confirmButtonColor: "#d33"
-                            });
+                                title: "Cliente actualizado",
+                                text: "Los cambios se guardaron correctamente.",
+                                icon: "success"
+                            }).then(() => location.reload());
+                        } else {
+                            Swal.fire("Error", response.message || "No se pudo actualizar el cliente.", "error");
                         }
                     },
                     error: function () {
-                        Swal.fire({
-                            title: "Error",
-                            text: "Error inesperado al procesar la solicitud.",
-                            icon: "error",
-                            confirmButtonText: "Cerrar",
-                            confirmButtonColor: "#d33"
-                        });
+                        Swal.fire("Error inesperado", "No se pudo procesar la solicitud.", "error");
                     }
                 });
             });
         })
-        .fail(function () {
-            $("#contenidoModal").html("<div class='text-danger text-center py-4'>❌ Error al cargar los datos.</div>");
-        });
+        .fail(() => $("#contenidoModal").html("<div class='text-danger text-center py-4'>❌ Error al cargar los datos.</div>"));
 }
 
-// 🧩 Función moderna para abrir el modal de eliminación
+// ================================
+// ELIMINAR CLIENTE
+// ================================
 function abrirModalEliminar(id) {
-    // Efecto visual de carga
     $("#tituloModal").html(`<i class="bi bi-trash3 text-danger"></i> Eliminar Cliente`);
     $("#contenidoModal").html(`
         <div class="d-flex flex-column align-items-center justify-content-center py-5 text-center text-muted">
@@ -156,31 +131,20 @@ function abrirModalEliminar(id) {
             <p class="fw-semibold">Cargando información del cliente...</p>
         </div>
     `);
+    mostrarModal();
 
-    // Mostrar el modal
-    const modal = new bootstrap.Modal(document.getElementById("modalCliente"));
-    modal.show();
-
-    // Solicitud AJAX para cargar los datos del cliente
-    $.ajax({
-        url: `/Clientes/Delete/${id}`,
-        type: "GET",
-        success: function (data) {
-            // Si viene contenido válido (HTML del partial)
+    $.get("/Clientes/Delete/" + id)
+        .done(function (data) {
             if (data && data.trim().length > 0) {
                 $("#contenidoModal").hide().html(data).fadeIn(300);
             } else {
                 mostrarErrorModal("No se pudo cargar el cliente seleccionado.");
             }
-        },
-        error: function (xhr) {
-            let msg = xhr.responseText || "Error al obtener los datos del cliente.";
-            mostrarErrorModal(msg);
-        }
-    });
+        })
+        .fail((xhr) => mostrarErrorModal(xhr.responseText || "Error al obtener los datos del cliente."));
 }
 
-// 🎨 Función auxiliar para mostrar errores elegantes dentro del modal
+// 🎨 Mostrar error dentro del modal
 function mostrarErrorModal(mensaje) {
     $("#contenidoModal").html(`
         <div class="text-center py-5">

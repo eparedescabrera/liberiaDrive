@@ -5,95 +5,91 @@
 
 <h2 class="fw-bold text-center my-3">Gestión de Instructores</h2>
 
-<!-- 🔹 Botón Nuevo Instructor -->
 <div class="text-end mb-3">
     <button class="btn btn-primary" onclick="abrirModalCrearInstructor()">
-        <i class="bi bi-person-plus"></i> Nuevo Instructor
+        ➕ Nuevo Instructor
     </button>
 </div>
 
-<!-- 🔹 Tabla de Instructores -->
-<table class="table table-bordered table-striped align-middle">
-    <thead class="table-dark text-center">
+<table class="table table-bordered table-striped align-middle text-center">
+    <thead class="table-dark">
         <tr>
-            <th>Nombre</th>
-            <th>Apellidos</th>
+            <th>Instructor</th>
+            <th>Licencias</th> <!-- ✅ Nuevo campo -->
             <th>Estado</th>
             <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
-        @if (ViewBag.Instructores != null && ViewBag.Instructores.Rows.Count > 0)
+        @foreach (var inst in ViewBag.Instructores.Rows)
         {
-            foreach (System.Data.DataRow row in ViewBag.Instructores.Rows)
-            {
-                bool activo = Convert.ToBoolean(row["Estado"]);
-                <tr class="@(activo ? "" : "table-secondary") text-center">
-                    <td>@row["Nombre"]</td>
-                    <td>@row["Apellidos"]</td>
-                    <td>
-                        @if (activo)
-                        {
-                            <span class="badge bg-success">Activo</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-danger">Inactivo</span>
-                        }
-                    </td>
-                    <td>
-                        <button class="btn btn-warning btn-sm text-white"
-                                onclick="abrirModalEditarInstructor(@row["IdInstructor"])">
-                            ✏️ Editar
-                        </button>
+            int id = Convert.ToInt32(inst["IdInstructor"]);
+            bool activo = Convert.ToBoolean(inst["Estado"]);
 
-                        <button class="btn btn-info btn-sm text-white"
-                                onclick="abrirModalDetallesInstructor(@row["IdInstructor"])">
-                            🔍 Ver
-                        </button>
+            <tr class="@(activo ? "" : "table-secondary")">
 
-                        <button class="btn btn-danger btn-sm"
-                                onclick="abrirModalEliminarInstructor(@row["IdInstructor"])">
-                            🗑️ Eliminar
-                        </button>
-                    </td>
-                </tr>
-            }
-        }
-        else
-        {
-            <tr>
-                <td colspan="4" class="text-center text-muted py-4">
-                    No hay instructores registrados.
+                <!-- ✅ Nombre -->
+                <td>@inst["Nombre"] @inst["Apellidos"]</td>
+
+                <!-- ✅ Licencias como badges -->
+                <td>
+                    @if (ViewBag.LicenciasPorInstructor.ContainsKey(id))
+                    {
+                        foreach (var lic in ViewBag.LicenciasPorInstructor[id])
+                        {
+                            <span class="badge bg-primary me-1">@lic</span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Sin licencias</span>
+                    }
                 </td>
+
+                <!-- ✅ Estado -->
+                <td>
+                    @if (activo)
+                    {
+                        <span class="badge bg-success">Activo</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Inactivo</span>
+                    }
+                </td>
+
+                <!-- ✅ Acciones -->
+                <td>
+                    <button class="btn btn-warning btn-sm text-white" onclick="abrirModalEditarInstructor(@id)">✏️</button>
+
+                    @* <button class="btn btn-info btn-sm text-white"
+                        onclick="abrirModalDetalles(@id)">🔍</button> *@
+
+                    <button class="btn btn-danger btn-sm" onclick="abrirModalEliminar(@id)">🗑️</button>
+                </td>
+
             </tr>
         }
     </tbody>
 </table>
 
 <!-- 🔹 Modal Reutilizable -->
-<div class="modal fade" id="modalInstructor" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="modalInstructor" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content shadow-lg border-0">
+        <div class="modal-content">
             <div class="modal-header bg-dark text-white">
-                <h5 class="modal-title" id="tituloModal">Instructor</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <h5 id="tituloModal" class="modal-title">Instructor</h5>
+                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="contenidoModal">
-                <div class="text-center py-4">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Cargando...</span>
-                    </div>
+                <div class="text-center p-4">
+                    <div class="spinner-border text-primary"></div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- 🔹 Scripts -->
 @section Scripts {
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="~/js/instructores.js"></script>
+    <script src="~/js/instructores.js?v=@DateTime.Now.Ticks"></script>
 }

@@ -16,8 +16,6 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<Cliente> Cliente { get; set; }
 
-    public virtual DbSet<Curso> Curso { get; set; }
-
     public virtual DbSet<FeedbackCliente> FeedbackCliente { get; set; }
 
     public virtual DbSet<HorarioInstructor> HorarioInstructor { get; set; }
@@ -43,6 +41,9 @@ public partial class ApplicationDbContext : DbContext
     public virtual DbSet<Vehiculo> Vehiculo { get; set; }
     public virtual DbSet<TokenRecuperacion> TokenRecuperacion { get; set; }
     public virtual DbSet<InstructorLicencia> InstructorLicencias { get; set; }
+    public virtual DbSet<Curso> Cursos { get; set; }
+public virtual DbSet<CursoTipo> CursoTipo { get; set; } // ✅ Agregado
+
 
 
 
@@ -82,16 +83,22 @@ public partial class ApplicationDbContext : DbContext
                 .HasMaxLength(100)
                 .IsUnicode(false);
         });
+        modelBuilder.Entity<CursoTipo>(entity =>
+{
+    entity.HasKey(e => e.IdCursoTipo).HasName("PK_CursoTipo");
+    entity.Property(e => e.NombreCursoTipo)
+        .HasMaxLength(50)
+        .IsUnicode(false);
+});
 
-        modelBuilder.Entity<Curso>(entity =>
-        {
-            entity.HasKey(e => e.IdCurso).HasName("PK__Curso__085F27D688AA31F0");
+       modelBuilder.Entity<Curso>(entity =>
+{
+    entity.HasOne(d => d.CursoTipo)
+        .WithMany(p => p.Cursos)
+        .HasForeignKey(d => d.IdCursoTipo)
+        .HasConstraintName("FK_Curso_CursoTipo");
+});
 
-            entity.Property(e => e.Costo).HasColumnType("decimal(10, 2)");
-            entity.Property(e => e.TipoCurso)
-                .HasMaxLength(50)
-                .IsUnicode(false);
-        });
 
         modelBuilder.Entity<FeedbackCliente>(entity =>
         {

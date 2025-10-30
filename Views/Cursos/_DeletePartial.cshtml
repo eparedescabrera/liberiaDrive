@@ -1,0 +1,37 @@
+@model LiberiaDriveMVC.Models.Curso
+
+<div class="container mt-3">
+    <div class="alert alert-warning border-0 shadow-sm">
+        <h5 class="fw-bold text-danger">
+            ⚠️ Confirmar eliminación
+        </h5>
+
+        <p>
+            ¿Estás seguro de que deseas eliminar este curso?
+        </p>
+
+        <ul class="list-unstyled mb-2">
+            <li><strong>Tipo de curso:</strong> @ViewBag.CursoTipo</li>
+            <li><strong>Duración:</strong> @Model.Duracion horas</li>
+            <li><strong>Costo:</strong> ₡@Model.Costo.ToString("N2")</li>
+        </ul>
+
+        <p class="text-muted">
+            Esta acción no se puede deshacer.
+        </p>
+    </div>
+
+    <form id="formEliminarCurso">
+        <!-- Campo oculto para enviar el IdCurso sin mostrarlo -->
+        <input type="hidden" name="IdCurso" value="@Model.IdCurso" />
+
+        <div class="d-flex justify-content-end mt-3">
+            <button type="submit" class="btn btn-danger me-2">
+                <i class="bi bi-trash"></i> Eliminar
+            </button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                Cancelar
+            </button>
+        </div>
+    </form>
+</div>

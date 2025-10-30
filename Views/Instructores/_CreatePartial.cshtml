@@ -3,36 +3,37 @@
     Layout = null;
 }
 
-<h5 class="fw-bold text-primary mb-3">
-    <i class="bi bi-person-plus"></i> Nuevo Instructor
-</h5>
+<h5 class="fw-bold text-primary mb-3">➕ Nuevo Instructor</h5>
 <hr />
 
-<form id="formCrearInstructor" method="post">
+<form id="formCrearInstructor">
     <div class="mb-3">
-        <label asp-for="Nombre" class="form-label">Nombre</label>
-        <input asp-for="Nombre" class="form-control" placeholder="Ingrese el nombre" />
-        <span asp-validation-for="Nombre" class="text-danger"></span>
+        <label>Nombre</label>
+        <input asp-for="Nombre" class="form-control" required />
     </div>
 
     <div class="mb-3">
-        <label asp-for="Apellidos" class="form-label">Apellidos</label>
-        <input asp-for="Apellidos" class="form-control" placeholder="Ingrese los apellidos" />
-        <span asp-validation-for="Apellidos" class="text-danger"></span>
+        <label>Apellidos</label>
+        <input asp-for="Apellidos" class="form-control" required />
     </div>
+
+    <!-- Licencias -->
+    <label class="fw-bold">Licencias</label>
+    <select class="form-select mb-3" name="licenciasSeleccionadas" multiple required>
+        @foreach (var lic in ViewBag.Licencias)
+        {
+            <option value="@lic.IdLicencia">@lic.TipoLicencia</option>
+        }
+    </select>
 
     <div class="form-check mb-3">
-        <input type="checkbox" name="Estado" class="form-check-input" value="true" checked />
+        <input type="checkbox" name="Estado" value="true" checked class="form-check-input" />
         <input type="hidden" name="Estado" value="false" />
         <label class="form-check-label">Activo</label>
     </div>
 
     <div class="text-end">
-        <button type="submit" class="btn btn-success px-4">
-            <i class="bi bi-check-circle"></i> Guardar
-        </button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-            <i class="bi bi-x-circle"></i> Cancelar
-        </button>
+        <button class="btn btn-success" type="submit">Guardar</button>
+        <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancelar</button>
     </div>
 </form>

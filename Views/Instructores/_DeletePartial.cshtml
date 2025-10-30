@@ -3,93 +3,36 @@
     Layout = null;
 }
 
-<h5 class="fw-bold text-danger mb-3">
-    <i class="bi bi-trash3"></i> Eliminar Instructor
-</h5>
-<hr />
+<div class="container mt-3">
+    <div class="alert alert-warning border-0 shadow-sm">
+        <h5 class="fw-bold text-danger mb-2">
+            ⚠️ Confirmar eliminación
+        </h5>
 
-<div class="alert alert-warning text-center shadow-sm">
-    ⚠️ <strong>Atención:</strong> Esta acción eliminará el registro del instructor de forma permanente.<br />
-    <small class="text-muted">No podrás recuperar los datos una vez confirmada la eliminación.</small>
-</div>
+        <p class="mb-2">¿Deseas eliminar al instructor siguiente?</p>
 
-<!-- 🔹 Datos del Instructor -->
-<div class="card border-0 shadow-sm mb-3">
-    <div class="card-body">
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item"><strong>👤 Nombre:</strong> @Model.Nombre @Model.Apellidos</li>
-            <li class="list-group-item">
-                <strong>📌 Estado:</strong>
-               @if (Model.Estado == true)
-{
-   <span class="badge bg-success">Activo</span>
-}
-else
-{
-   <span class="badge bg-danger">Inactivo</span>
-}
+        <ul class="list-unstyled mb-3">
+            <li><strong>Nombre:</strong> @Model.Nombre @Model.Apellidos</li>
+           <li><strong>Estado:</strong> @(Model.Estado == true ? "Activo" : "Inactivo")</li>
 
-            </li>
         </ul>
+
+        <p class="text-muted small mb-0">
+            Esta acción también eliminará sus licencias asociadas.  
+            <strong>No se podrá deshacer.</strong>
+        </p>
     </div>
+
+    <form id="formEliminarInstructor" method="post">
+        <input type="hidden" name="IdInstructor" value="@Model.IdInstructor" />
+
+        <div class="d-flex justify-content-end mt-3">
+            <button type="submit" class="btn btn-danger me-2 px-4">
+                <i class="bi bi-trash"></i> Eliminar
+            </button>
+            <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
+                <i class="bi bi-x-circle"></i> Cancelar
+            </button>
+        </div>
+    </form>
 </div>
-
-<!-- 🔹 Formulario de confirmación -->
-<form id="formEliminarInstructor" method="post" class="text-end">
-    <input type="hidden" id="IdInstructor" value="@Model.IdInstructor" />
-
-    <button type="submit" class="btn btn-danger px-4">
-        <i class="bi bi-trash3"></i> Eliminar
-    </button>
-    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-        <i class="bi bi-x-circle"></i> Cancelar
-    </button>
-</form>
-
-@section Scripts {
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    // 🧩 Evento de envío del formulario
-    $(document).off("submit", "#formEliminarInstructor").on("submit", "#formEliminarInstructor", function (e) {
-        e.preventDefault();
-        const id = $("#IdInstructor").val();
-
-        Swal.fire({
-            title: "¿Eliminar instructor?",
-            text: "Esta acción no se puede deshacer.",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#d33",
-            cancelButtonColor: "#6c757d",
-            confirmButtonText: "Sí, eliminar",
-            cancelButtonText: "Cancelar"
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: "/Instructores/DeleteConfirmed",
-                    type: "POST",
-                    data: { IdInstructor: id },
-                    success: function (resp) {
-                        if (resp.success) {
-                            Swal.fire({
-                                icon: "success",
-                                title: "Instructor eliminado",
-                                text: resp.message,
-                                timer: 1800,
-                                showConfirmButton: false
-                            });
-                            $("#modalInstructor").modal("hide");
-                            setTimeout(() => location.reload(), 1500);
-                        } else {
-                            Swal.fire("Error", resp.message, "error");
-                        }
-                    },
-                    error: function () {
-                        Swal.fire("Error", "No se pudo eliminar el instructor.", "error");
-                    }
-                });
-            }
-        });
-    });
-</script>
-}

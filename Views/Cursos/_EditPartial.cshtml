@@ -1,0 +1,39 @@
+@model LiberiaDriveMVC.Models.Curso
+@{
+    Layout = null;
+    var tiposCurso = ViewBag.TiposCurso as List<SelectListItem> ?? new List<SelectListItem>();
+}
+
+<h5 class="fw-bold text-primary mb-3">✏️ Editar Curso</h5>
+<hr />
+
+<form id="formEditarCurso">
+    <!-- Campo oculto: no se ve, pero se envía -->
+    <input type="hidden" name="IdCurso" value="@Model.IdCurso" />
+
+    <div class="form-group mb-3">
+        <label>Tipo de curso</label>
+        @Html.DropDownListFor(
+            m => m.IdCursoTipo,
+            new SelectList(ViewBag.TiposCurso, "Value", "Text"),
+            "Seleccione...",
+            new { @class = "form-control", required = "required" }
+        )
+    </div>
+
+    <div class="form-group mb-3">
+        <label>Duración (horas)</label>
+        <input type="number" class="form-control" name="Duracion" value="@Model.Duracion" min="1" max="200" required />
+    </div>
+
+    <div class="form-group mb-3">
+        <label>Costo</label>
+        <input type="text" id="CostoVisual" class="form-control precio" value="@Model.Costo.ToString("N2")" required />
+        <input type="hidden" id="Costo" name="Costo" value="@Model.Costo" />
+    </div>
+
+    <div class="text-end">
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+    </div>
+</form>

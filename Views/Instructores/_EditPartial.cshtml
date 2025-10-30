@@ -1,41 +1,48 @@
 @model LiberiaDriveMVC.Models.Instructor
 @{
     Layout = null;
+    var licencias = ViewBag.Licencias as List<LiberiaDriveMVC.Models.Licencia> ?? new List<LiberiaDriveMVC.Models.Licencia>();
+    var licenciasInstructor = ViewBag.LicenciasInstructor as List<int> ?? new List<int>();
 }
 
-<h5 class="fw-bold text-primary mb-3"><i class="bi bi-pencil-square"></i> Editar Instructor</h5>
+<h5 class="fw-bold text-primary mb-3">✏️ Editar Instructor</h5>
 <hr />
 
-<form id="formEditarInstructor" asp-action="Edit" asp-controller="Instructores" method="post">
-    <input type="hidden" asp-for="IdInstructor" />
+<form id="formEditarInstructor">
+    <input type="hidden" name="IdInstructor" value="@Model.IdInstructor" />
 
+    <!-- Nombre -->
     <div class="mb-3">
-        <label asp-for="Nombre" class="form-label"></label>
-        <input asp-for="Nombre" class="form-control" placeholder="Ingrese el nombre" />
-        <span asp-validation-for="Nombre" class="text-danger"></span>
+        <label>Nombre</label>
+        <input type="text" name="Nombre" class="form-control" value="@Model.Nombre" required />
     </div>
 
+    <!-- Apellidos -->
     <div class="mb-3">
-        <label asp-for="Apellidos" class="form-label"></label>
-        <input asp-for="Apellidos" class="form-control" placeholder="Ingrese los apellidos" />
-        <span asp-validation-for="Apellidos" class="text-danger"></span>
+        <label>Apellidos</label>
+        <input type="text" name="Apellidos" class="form-control" value="@Model.Apellidos" required />
     </div>
 
-    @{
-        bool estado = Model.Estado ?? false;
-    }
+    <!-- Licencias -->
+    <label class="fw-bold">Licencias</label>
+    <select class="form-select mb-3" name="licenciasSeleccionadas" multiple required>
+        @foreach (var lic in licencias)
+        {
+            var selected = licenciasInstructor.Contains(lic.IdLicencia) ? "selected" : "";
+            @Html.Raw($"<option value='{lic.IdLicencia}' {selected}>{lic.TipoLicencia}</option>")
+        }
+    </select>
+
+    <!-- Estado -->
     <div class="form-check mb-3">
-        <input type="checkbox" name="Estado" class="form-check-input" value="true" @(estado ? "checked" : "") />
+        <input type="checkbox" name="Estado" value="true" class="form-check-input" @(Model.Estado == true ? "checked" : "") />
         <input type="hidden" name="Estado" value="false" />
         <label class="form-check-label">Activo</label>
     </div>
 
+    <!-- Botones -->
     <div class="text-end">
-        <button type="submit" class="btn btn-success px-4">💾 Guardar</button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" type="submit">💾 Guardar cambios</button>
+        <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancelar</button>
     </div>
 </form>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}

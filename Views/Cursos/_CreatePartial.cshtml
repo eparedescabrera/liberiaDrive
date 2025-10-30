@@ -1,0 +1,48 @@
+@model LiberiaDriveMVC.Models.Curso
+@using Microsoft.AspNetCore.Mvc.Rendering
+@{
+    ViewData["Title"] = "Agregar Curso";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <h3 class="fw-bold text-primary mb-3">
+                ➕ Agregar Curso
+            </h3>
+            <hr />
+
+            <form id="formCrearCurso">
+                <div class="form-group mb-3">
+                    <label>Tipo de curso</label>
+                    @Html.DropDownListFor(
+                        m => m.IdCursoTipo,
+                        new SelectList(ViewBag.TiposCurso, "Value", "Text"),
+                        "Seleccione...",
+                        new { @class = "form-control", required = "required" }
+                    )
+                </div>
+
+                <div class="form-group mb-3">
+                    <label>Duración (horas)</label>
+                    <input asp-for="Duracion" class="form-control" type="number" min="1" max="200" required />
+                    <span asp-validation-for="Duracion" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label>Costo</label>
+                    <input type="text" id="CostoVisual" class="form-control precio" required />
+                    <input type="hidden" id="Costo" name="Costo" />
+                    <span asp-validation-for="Costo" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+}

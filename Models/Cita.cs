@@ -1,19 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
-namespace LiberiaDriveMVC.Models;
-
-public partial class Cita
+namespace LiberiaDriveMVC.Models
 {
-    public int IdCita { get; set; }
+    public partial class Cita
+    {
+        [Key]
+        public int IdCita { get; set; }
 
-    public int IdCliente { get; set; }
+        [Required]
+        public int IdCliente { get; set; }
 
-    public string TipoExamen { get; set; } = null!;
+        [Required(ErrorMessage = "Debe indicar el tipo de examen.")]
+        public string TipoExamen { get; set; } = string.Empty;
 
-    public DateTime FechaCita { get; set; }
+        [Required(ErrorMessage = "Debe indicar la fecha de la cita.")]
+        [DataType(DataType.DateTime)]
+        public DateTime FechaCita { get; set; }
 
-    public string? Estado { get; set; }
+        [Required]
+        public string Estado { get; set; } = "Pendiente";
 
-    public virtual Cliente IdClienteNavigation { get; set; } = null!;
+        // ⚙️ Mantener navegación para EF Core, aunque no la uses en SP
+        public virtual Cliente IdClienteNavigation { get; set; } = null!;
+    }
 }
