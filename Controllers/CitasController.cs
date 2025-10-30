@@ -11,6 +11,7 @@ namespace LiberiaDriveMVC.Controllers
     public class CitasController : Controller
     {
         private readonly DatabaseService _db;
+
         public CitasController(DatabaseService db)
         {
             _db = db;
@@ -21,12 +22,20 @@ namespace LiberiaDriveMVC.Controllers
         // =====================================================
         public IActionResult Index()
         {
-            // Actualiza automáticamente las citas vencidas antes de listar
-            _db.EjecutarSPNonQuery("sp_ActualizarEstadoCitas", null);
+            try
+            {
+                // Actualiza automáticamente las citas vencidas antes de listar
+                _db.EjecutarSPNonQuery("sp_ActualizarEstadoCitas", null);
 
-            var dt = _db.EjecutarSPDataTable("sp_ListarCitas", null);
-            ViewBag.Citas = dt;
-            return View();
+                var dt = _db.EjecutarSPDataTable("sp_ListarCitas", null);
+                ViewBag.Citas = dt;
+                return View();
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = "❌ Error al cargar las citas: " + ex.Message;
+                return View();
+            }
         }
 
         // =====================================================
@@ -35,7 +44,7 @@ namespace LiberiaDriveMVC.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            // No cargamos clientes aquí (lo hará el buscador AJAX)
+            // El buscador AJAX cargará los clientes dinámicamente
             return PartialView("_CreatePartial", new Cita());
         }
 
@@ -46,10 +55,33 @@ namespace LiberiaDriveMVC.Controllers
         public IActionResult Create(Cita model)
         {
             if (!ModelState.IsValid)
-                return Json(new { success = false, message = "Datos inválidos del formulario." });
+                return Json(new { success = false, message = "❌ Datos inválidos del formulario." });
 
             try
             {
+                // 🕒 Validar fecha anterior
+                if (model.FechaCita.Date < DateTime.Today)
+                    return Json(new { success = false, message = "❌ No se puede registrar una cita con fecha anterior al día actual." });
+
+                // 🔍 Validar si ya existe una cita para el mismo cliente y tipo
+                var validarParams = new Dictionary<string, object>
+                {
+                    { "@IdCliente", model.IdCliente },
+                    { "@FechaCita", model.FechaCita },
+                    { "@TipoExamen", model.TipoExamen }
+                };
+
+                var dtValidacion = _db.EjecutarSPDataTable("sp_VerificarCitaDuplicada", validarParams);
+                if (dtValidacion.Rows.Count > 0)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = "⚠️ El cliente ya tiene una cita registrada para esa fecha y tipo de examen."
+                    });
+                }
+
+                // 💾 Registrar cita
                 var param = new Dictionary<string, object>
                 {
                     { "@IdCliente", model.IdCliente },
@@ -58,7 +90,7 @@ namespace LiberiaDriveMVC.Controllers
                 };
 
                 _db.EjecutarSPNonQuery("sp_InsertarCita", param);
-                return Json(new { success = true, message = "Cita registrada correctamente." });
+                return Json(new { success = true, message = "✅ Cita registrada correctamente." });
             }
             catch (Exception ex)
             {
@@ -72,25 +104,32 @@ namespace LiberiaDriveMVC.Controllers
         [HttpGet]
         public IActionResult Edit(int id)
         {
-            var dt = _db.EjecutarSPDataTable("sp_ObtenerCitaPorId",
-                new Dictionary<string, object> { { "@IdCita", id } });
-
-            if (dt.Rows.Count == 0)
-                return Content("<div class='alert alert-warning'>Cita no encontrada.</div>");
-
-            var row = dt.Rows[0];
-
-            var cita = new Cita
+            try
             {
-                IdCita = id,
-                IdCliente = Convert.ToInt32(row["IdCliente"]),
-                NombreCliente = row["NombreCliente"].ToString(),
-                TipoExamen = row["TipoExamen"].ToString(),
-                FechaCita = Convert.ToDateTime(row["FechaCita"]),
-                Estado = row["Estado"].ToString()
-            };
+                var dt = _db.EjecutarSPDataTable("sp_ObtenerCitaPorId",
+                    new Dictionary<string, object> { { "@IdCita", id } });
 
-            return PartialView("_EditPartial", cita);
+                if (dt.Rows.Count == 0)
+                    return Content("<div class='alert alert-warning'>Cita no encontrada.</div>");
+
+                var row = dt.Rows[0];
+
+                var cita = new Cita
+                {
+                    IdCita = id,
+                    IdCliente = Convert.ToInt32(row["IdCliente"]),
+                    TipoExamen = row["TipoExamen"].ToString(),
+                    FechaCita = Convert.ToDateTime(row["FechaCita"]),
+                    Estado = row["Estado"].ToString(),
+                    ClienteNombre = row.Table.Columns.Contains("ClienteNombre") ? row["ClienteNombre"].ToString() : string.Empty
+                };
+
+                return PartialView("_EditPartial", cita);
+            }
+            catch (Exception ex)
+            {
+                return Content($"<div class='text-danger text-center'>❌ Error: {ex.Message}</div>");
+            }
         }
 
         // =====================================================
@@ -101,7 +140,14 @@ namespace LiberiaDriveMVC.Controllers
         {
             try
             {
-                var param = new Dictionary<string, object>
+                if (!ModelState.IsValid)
+                    return Json(new { success = false, message = "❌ Datos inválidos del formulario." });
+
+                // Validación de fecha anterior
+                if (model.FechaCita.Date < DateTime.Today)
+                    return Json(new { success = false, message = "❌ No se puede modificar la cita con una fecha anterior al día actual." });
+
+                var parametros = new Dictionary<string, object>
                 {
                     { "@IdCita", model.IdCita },
                     { "@IdCliente", model.IdCliente },
@@ -110,8 +156,8 @@ namespace LiberiaDriveMVC.Controllers
                     { "@Estado", model.Estado }
                 };
 
-                _db.EjecutarSPNonQuery("sp_ActualizarCita", param);
-                return Json(new { success = true, message = "Cita actualizada correctamente." });
+                _db.EjecutarSPNonQuery("sp_ActualizarCita", parametros);
+                return Json(new { success = true, message = "✅ Cita actualizada correctamente." });
             }
             catch (Exception ex)
             {
@@ -125,24 +171,31 @@ namespace LiberiaDriveMVC.Controllers
         [HttpGet]
         public IActionResult Delete(int id)
         {
-            var dt = _db.EjecutarSPDataTable("sp_ObtenerCitaPorId",
-                new Dictionary<string, object> { { "@IdCita", id } });
-
-            if (dt.Rows.Count == 0)
-                return Content("<div class='alert alert-warning text-center'>Cita no encontrada.</div>");
-
-            var row = dt.Rows[0];
-
-            var cita = new Cita
+            try
             {
-                IdCita = id,
-                NombreCliente = row["NombreCliente"].ToString(),
-                TipoExamen = row["TipoExamen"].ToString(),
-                FechaCita = Convert.ToDateTime(row["FechaCita"]),
-                Estado = row["Estado"].ToString()
-            };
+                var dt = _db.EjecutarSPDataTable("sp_ObtenerCitaPorId",
+                    new Dictionary<string, object> { { "@IdCita", id } });
 
-            return PartialView("_DeletePartial", cita);
+                if (dt.Rows.Count == 0)
+                    return Content("<div class='alert alert-warning text-center'>Cita no encontrada.</div>");
+
+                var row = dt.Rows[0];
+
+                var cita = new Cita
+                {
+                    IdCita = id,
+                    NombreCliente = row["NombreCliente"].ToString(),
+                    TipoExamen = row["TipoExamen"].ToString(),
+                    FechaCita = Convert.ToDateTime(row["FechaCita"]),
+                    Estado = row["Estado"].ToString()
+                };
+
+                return PartialView("_DeletePartial", cita);
+            }
+            catch (Exception ex)
+            {
+                return Content($"<div class='text-danger text-center'>❌ Error: {ex.Message}</div>");
+            }
         }
 
         // =====================================================
@@ -156,7 +209,7 @@ namespace LiberiaDriveMVC.Controllers
                 _db.EjecutarSPNonQuery("sp_EliminarCita",
                     new Dictionary<string, object> { { "@IdCita", IdCita } });
 
-                return Json(new { success = true, message = "Cita eliminada correctamente." });
+                return Json(new { success = true, message = "🗑️ Cita eliminada correctamente." });
             }
             catch (Exception ex)
             {
@@ -170,7 +223,6 @@ namespace LiberiaDriveMVC.Controllers
         [HttpGet]
         public IActionResult BuscarClientes(string term)
         {
-            // term es el texto que el usuario escribe en el buscador
             var parametros = new Dictionary<string, object>
             {
                 { "@Texto", term ?? "" }
@@ -185,6 +237,23 @@ namespace LiberiaDriveMVC.Controllers
             });
 
             return Json(resultados);
+        }
+
+        // =====================================================
+        // 🔧 UTILIDAD: Obtener ID de cliente por nombre
+        // =====================================================
+        private int ObtenerIdClienteDesdeNombre(string nombreCompleto)
+        {
+            var dt = _db.EjecutarSPDataTable("sp_ListarClientes", null);
+
+            foreach (System.Data.DataRow row in dt.Rows)
+            {
+                string nombre = row["NombreCompleto"].ToString();
+                if (string.Equals(nombre, nombreCompleto, StringComparison.OrdinalIgnoreCase))
+                    return Convert.ToInt32(row["IdCliente"]);
+            }
+
+            return 0;
         }
     }
 }

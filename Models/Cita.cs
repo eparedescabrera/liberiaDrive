@@ -26,6 +26,9 @@ namespace LiberiaDriveMVC.Models
         [Required]
         [StringLength(50)]
         public string Estado { get; set; } = "Pendiente";
+        // Nombre del cliente (solo para mostrar en vistas, no se guarda en la BD)
+public string? ClienteNombre { get; set; }
+
 
         public virtual Cliente? IdClienteNavigation { get; set; }
     }
