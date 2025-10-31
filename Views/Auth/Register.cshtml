@@ -1,3 +1,5 @@
+@model LiberiaDriveMVC.Models.ViewModels.RegisterViewModel
+
 @{
     Layout = null;
     ViewData["Title"] = "Registrarse";
@@ -9,25 +11,31 @@
     <div class="card shadow-lg border-0 p-4" style="width:400px;">
         <h3 class="text-center mb-4">🧍 Registro de Cliente</h3>
 
-        @if (ViewBag.Error != null)
-        {
-            <div class="alert alert-danger text-center">@ViewBag.Error</div>
-        }
+        <form method="post" asp-action="Register" novalidate>
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
-        <form method="post" asp-action="Register">
             <div class="mb-3">
-                <label class="form-label">Nombre de usuario</label>
-                <input type="text" name="nombreUsuario" class="form-control" required />
+                <label asp-for="NombreUsuario" class="form-label"></label>
+                <input asp-for="NombreUsuario" class="form-control" />
+                <span asp-validation-for="NombreUsuario" class="text-danger"></span>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Correo electrónico</label>
-                <input type="email" name="correo" class="form-control" required />
+                <label asp-for="Correo" class="form-label"></label>
+                <input asp-for="Correo" class="form-control" />
+                <span asp-validation-for="Correo" class="text-danger"></span>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Contraseña</label>
-                <input type="password" name="contrasena" class="form-control" required />
+                <label asp-for="Contrasena" class="form-label"></label>
+                <input asp-for="Contrasena" class="form-control" />
+                <span asp-validation-for="Contrasena" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="ConfirmacionContrasena" class="form-label"></label>
+                <input asp-for="ConfirmacionContrasena" class="form-control" />
+                <span asp-validation-for="ConfirmacionContrasena" class="text-danger"></span>
             </div>
 
             <button type="submit" class="btn btn-success w-100">Registrarme</button>
@@ -38,3 +46,5 @@
         </div>
     </div>
 </div>
+
+<partial name="_ValidationScriptsPartial" />

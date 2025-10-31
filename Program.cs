@@ -1,5 +1,9 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using LiberiaDriveMVC.Data;
+using LiberiaDriveMVC.Models;
 using LiberiaDriveMVC.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,9 +11,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession();
 
-// ✅ Registrar servicios
+// ✅ Registrar servicios de infraestructura
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 builder.Services.AddScoped<DatabaseService>();
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
 
 // ✅ Configurar autenticación
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

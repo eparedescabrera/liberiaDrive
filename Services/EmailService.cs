@@ -1,16 +1,20 @@
+using System;
 using System.Net;
 using System.Net.Mail;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace LiberiaDriveMVC.Services
 {
     public class EmailService
     {
         private readonly IConfiguration _config;
+        private readonly ILogger<EmailService> _logger;
 
-        public EmailService(IConfiguration config)
+        public EmailService(IConfiguration config, ILogger<EmailService> logger)
         {
             _config = config;
+            _logger = logger;
         }
 
         public bool EnviarCorreo(string destinatario, string asunto, string cuerpoHtml)
@@ -41,8 +45,9 @@ namespace LiberiaDriveMVC.Services
 
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error al enviar correo a {Destinatario}", destinatario);
                 return false;
             }
         }

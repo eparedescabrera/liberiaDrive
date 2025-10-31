@@ -2,20 +2,22 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
+using LiberiaDriveMVC.Models;
+using LiberiaDriveMVC.Models.ViewModels;
 using LiberiaDriveMVC.Services;
-using System.Security.Cryptography;
-using System.Text;
-using System.Data;
+using Microsoft.AspNetCore.Identity;
 
 namespace LiberiaDriveMVC.Controllers
 {
     public class AuthController : Controller
     {
-        private readonly DatabaseService _db;
+        private readonly IUserService _userService;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(DatabaseService db)
+        public AuthController(IUserService userService, ILogger<AuthController> logger)
         {
-            _db = db;
+            _userService = userService;
+            _logger = logger;
         }
 
         // ===============================
@@ -24,58 +26,56 @@ namespace LiberiaDriveMVC.Controllers
         [HttpGet]
         public IActionResult Login()
         {
-            return View();
+            return View(new LoginViewModel());
         }
 
         // ===============================
         // LOGIN (POST)
         // ===============================
         [HttpPost]
-        public async Task<IActionResult> Login(string nombreUsuario, string contrasena)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(LoginViewModel model)
         {
-            string query = @"SELECT u.*, r.NombreRol 
-                             FROM Usuario u 
-                             INNER JOIN Rol r ON u.IdRol = r.IdRol 
-                             WHERE u.NombreUsuario = @NombreUsuario AND u.Estado = 1";
-
-            var parametros = new Dictionary<string, object> { { "@NombreUsuario", nombreUsuario } };
-            var dt = _db.EjecutarSPDataTable(query, parametros, true);
-
-            if (dt.Rows.Count == 0)
+            if (!ModelState.IsValid)
             {
-                ViewBag.Error = "Usuario no encontrado o inactivo.";
-                return View();
+                return View(model);
             }
 
-            var user = dt.Rows[0];
-            string storedHash = user["ContrasenaHash"].ToString() ?? "";
-            string inputHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(contrasena ?? "")));
+            var user = await _userService.GetActiveUserByUsernameAsync(model.NombreUsuario);
 
-            if (!string.Equals(storedHash, inputHash, StringComparison.Ordinal))
+            if (user is null)
             {
-                ViewBag.Error = "Contraseña incorrecta.";
-                return View();
+                ModelState.AddModelError(string.Empty, "Usuario no encontrado o inactivo.");
+                return View(model);
             }
 
-            // Crear sesión
+            var verification = _userService.VerifyPassword(user, model.Contrasena);
+
+            if (verification == PasswordVerificationResult.Failed)
+            {
+                ModelState.AddModelError(string.Empty, "Contraseña incorrecta.");
+                return View(model);
+            }
+
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user["NombreUsuario"].ToString()!),
-                new Claim(ClaimTypes.Role, user["NombreRol"].ToString()!)
+                new(ClaimTypes.NameIdentifier, user.IdUsuario.ToString()),
+                new(ClaimTypes.Name, user.NombreUsuario),
+                new(ClaimTypes.Email, user.Correo),
+                new(ClaimTypes.Role, user.IdRolNavigation.NombreRol)
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-            string rol = user["NombreRol"].ToString();
-
-if (rol == "Administrador")
-    return RedirectToAction("Index", "Admin");  // 🔹 Ahora va al panel administrativo
-else
-    return RedirectToAction("Index", "Home");   // 🔹 Página pública para cliente
+            return user.IdRolNavigation.NombreRol switch
+            {
+                "Administrador" => RedirectToAction("Index", "Admin"),
+                _ => RedirectToAction("Index", "Home")
+            };
         }
-        
+
 
         // ===============================
         // LOGOUT
@@ -94,65 +94,45 @@ else
         [HttpGet]
         public IActionResult Register()
         {
-            return View();
+            return View(new RegisterViewModel());
         }
 
         // ===============================
         // REGISTRARSE (POST)
         // ===============================
         [HttpPost]
-        public IActionResult Register(string nombreUsuario, string correo, string contrasena)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if (string.IsNullOrWhiteSpace(nombreUsuario) ||
-                string.IsNullOrWhiteSpace(correo) ||
-                string.IsNullOrWhiteSpace(contrasena))
+            if (!ModelState.IsValid)
             {
-                ViewBag.Error = "⚠️ Todos los campos son obligatorios.";
-                return View();
+                return View(model);
             }
 
-            // Verificar duplicados
-            string checkQuery = "SELECT * FROM Usuario WHERE NombreUsuario = @Usuario OR Correo = @Correo";
-            var checkParams = new Dictionary<string, object>
+            if (await _userService.IsUsernameOrEmailTakenAsync(model.NombreUsuario, model.Correo))
             {
-                { "@Usuario", nombreUsuario },
-                { "@Correo", correo }
-            };
-            var dt = _db.EjecutarSPDataTable(checkQuery, checkParams, true);
-            if (dt.Rows.Count > 0)
-            {
-                ViewBag.Error = "⚠️ Ya existe un usuario con ese nombre o correo.";
-                return View();
+                ModelState.AddModelError(string.Empty, "⚠️ Ya existe un usuario con ese nombre o correo.");
+                return View(model);
             }
 
-            // Hashear contraseña
-            string hash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(contrasena)));
-
-            // Rol fijo: Cliente
-            string rolQuery = "SELECT TOP 1 IdRol FROM Rol WHERE NombreRol = 'Cliente'";
-            var rolDt = _db.EjecutarSPDataTable(rolQuery, null, true);
-            if (rolDt.Rows.Count == 0)
+            try
             {
-                ViewBag.Error = "❌ No se encontró el rol 'Cliente'.";
-                return View();
+                await _userService.CreateClientUserAsync(model.NombreUsuario, model.Correo, model.Contrasena);
+                TempData["Success"] = "✅ Registro exitoso. Ahora puedes iniciar sesión.";
+                return RedirectToAction("Login");
             }
-            int idRolCliente = Convert.ToInt32(rolDt.Rows[0]["IdRol"]);
-
-            string insert = @"
-                INSERT INTO Usuario (NombreUsuario, Correo, ContrasenaHash, IdRol, Estado, FechaRegistro)
-                VALUES (@Usuario, @Correo, @Hash, @IdRol, 1, GETDATE())";
-
-            var parametros = new Dictionary<string, object>
+            catch (InvalidOperationException ex)
             {
-                { "@Usuario", nombreUsuario },
-                { "@Correo", correo },
-                { "@Hash", hash },
-                { "@IdRol", idRolCliente }
-            };
+                _logger.LogError(ex, "No se pudo crear el usuario por falta de rol configurado.");
+                ModelState.AddModelError(string.Empty, "❌ No se encontró el rol 'Cliente'. Contacta al administrador.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error inesperado al registrar usuario {User}", model.NombreUsuario);
+                ModelState.AddModelError(string.Empty, "❌ Ocurrió un error inesperado. Inténtalo nuevamente.");
+            }
 
-            _db.EjecutarSPNonQuery(insert, parametros, true);
-            TempData["Success"] = "✅ Registro exitoso. Ahora puedes iniciar sesión.";
-            return RedirectToAction("Login");
+            return View(model);
         }
 
         public IActionResult AccessDenied() => View();
