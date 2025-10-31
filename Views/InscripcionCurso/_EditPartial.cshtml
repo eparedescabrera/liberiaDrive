@@ -1,0 +1,98 @@
+@model LiberiaDriveMVC.Models.InscripcionCurso
+
+<div class="p-3">
+    <form id="formEditarInscripcion">
+        <!-- Campo oculto para el ID -->
+        <input type="hidden" asp-for="IdInscripcion" />
+
+        <div class="form-group mb-3">
+            <label><strong>Cliente:</strong></label>
+            <select id="IdCliente" name="IdCliente" class="form-control" style="width:100%;" required></select>
+        </div>
+
+        <div class="form-group mb-3">
+            <label><strong>Curso:</strong></label>
+            <select id="IdCurso" name="IdCurso" class="form-control" style="width:100%;" required></select>
+        </div>
+
+        <div class="form-group mb-3">
+            <label><strong>Fecha de inscripción:</strong></label>
+            <input asp-for="FechaInscripcion" class="form-control" type="date" required />
+        </div>
+
+        <div class="text-end mt-3">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-pencil-square"></i> Guardar Cambios
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+$(document).ready(function () {
+
+    // 🔍 Inicializar Select2 para CLIENTES
+    $('#IdCliente').select2({
+        dropdownParent: $('#modalInscripcion'),
+        width: '100%',
+        placeholder: 'Seleccione un cliente',
+        allowClear: true,
+        ajax: {
+            url: '/InscripcionCurso/BuscarClientes',
+            dataType: 'json',
+            delay: 250,
+            data: params => ({ term: params.term }),
+            processResults: data => ({ results: data })
+        }
+    });
+
+    // 🔍 Inicializar Select2 para CURSOS
+    $('#IdCurso').select2({
+        dropdownParent: $('#modalInscripcion'),
+        width: '100%',
+        placeholder: 'Seleccione un curso',
+        allowClear: true,
+        ajax: {
+            url: '/InscripcionCurso/BuscarCursos',
+            dataType: 'json',
+            delay: 250,
+            data: params => ({ term: params.term }),
+            processResults: data => ({ results: data })
+        }
+    });
+
+    // 🧠 Preseleccionar los valores actuales (Cliente y Curso)
+    const idClienteActual = '@Model.IdCliente';
+    const idCursoActual = '@Model.IdCurso';
+
+    if (idClienteActual && idClienteActual !== '0') {
+        $.get('/InscripcionCurso/BuscarClientes', { term: '' }, function (data) {
+            const cliente = data.find(c => c.id == idClienteActual);
+            if (cliente) {
+                const option = new Option(cliente.text, cliente.id, true, true);
+                $('#IdCliente').append(option).trigger('change');
+            }
+        });
+    }
+
+    if (idCursoActual && idCursoActual !== '0') {
+        $.get('/InscripcionCurso/BuscarCursos', { term: '' }, function (data) {
+            const curso = data.find(c => c.id == idCursoActual);
+            if (curso) {
+                const option = new Option(curso.text, curso.id, true, true);
+                $('#IdCurso').append(option).trigger('change');
+            }
+        });
+    }
+
+    // ✅ Envío AJAX
+    $('#formEditarInscripcion').on('submit', function (e) {
+        e.preventDefault();
+        const data = $(this).serialize();
+
+        $.post('/InscripcionCurso/Edit', data, function (resp) {
+            mostrarResultado(resp, 'Inscripción actualizada correctamente.');
+        });
+    });
+});
+</script>

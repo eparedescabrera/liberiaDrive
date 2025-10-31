@@ -63,7 +63,7 @@ namespace LiberiaDriveMVC.Controllers
                 if (model.FechaCita.Date < DateTime.Today)
                     return Json(new { success = false, message = "❌ No se puede registrar una cita con fecha anterior al día actual." });
 
-                // 🔍 Validar si ya existe una cita para el mismo cliente y tipo
+                // 🔍 Validar duplicado o teórico pendiente usando SP
                 var validarParams = new Dictionary<string, object>
                 {
                     { "@IdCliente", model.IdCliente },
@@ -72,13 +72,16 @@ namespace LiberiaDriveMVC.Controllers
                 };
 
                 var dtValidacion = _db.EjecutarSPDataTable("sp_VerificarCitaDuplicada", validarParams);
+
                 if (dtValidacion.Rows.Count > 0)
                 {
-                    return Json(new
-                    {
-                        success = false,
-                        message = "⚠️ El cliente ya tiene una cita registrada para esa fecha y tipo de examen."
-                    });
+                    var mensaje = dtValidacion.Rows[0]["Mensaje"].ToString();
+                    var tipo = dtValidacion.Rows[0].Table.Columns.Contains("TipoError")
+                        ? dtValidacion.Rows[0]["TipoError"].ToString()
+                        : "";
+
+                    if (tipo == "DUPLICADA" || tipo == "TEORICO_PENDIENTE")
+                        return Json(new { success = false, message = mensaje });
                 }
 
                 // 💾 Registrar cita
@@ -121,7 +124,7 @@ namespace LiberiaDriveMVC.Controllers
                     TipoExamen = row["TipoExamen"].ToString(),
                     FechaCita = Convert.ToDateTime(row["FechaCita"]),
                     Estado = row["Estado"].ToString(),
-                    ClienteNombre = row.Table.Columns.Contains("ClienteNombre") ? row["ClienteNombre"].ToString() : string.Empty
+                    ClienteNombre = row.Table.Columns.Contains("NombreCliente") ? row["NombreCliente"].ToString() : ""
                 };
 
                 return PartialView("_EditPartial", cita);

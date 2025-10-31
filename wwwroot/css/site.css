@@ -46,3 +46,16 @@
         padding: 10px;
     }
 }
+.card {
+    transition: all 0.25s ease-in-out;
+}
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+.input-group-text {
+    border-right: 0;
+}
+.select2-container--open {
+    z-index: 999999 !important;
+}

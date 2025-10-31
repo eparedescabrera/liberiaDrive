@@ -1,0 +1,71 @@
+@model LiberiaDriveMVC.Models.InscripcionCurso
+
+<div class="p-3">
+    <form id="formCrearInscripcion">
+        <div class="form-group mb-3">
+            <label><strong>Cliente:</strong></label>
+            <select id="IdCliente" name="IdCliente" class="form-control" style="width:100%;" required></select>
+        </div>
+
+        <div class="form-group mb-3">
+            <label><strong>Curso:</strong></label>
+            <select id="IdCurso" name="IdCurso" class="form-control" style="width:100%;" required></select>
+        </div>
+
+        <div class="form-group mb-3">
+            <label><strong>Fecha de inscripción:</strong></label>
+            <input asp-for="FechaInscripcion" class="form-control" type="date" required />
+        </div>
+
+        <div class="text-end mt-3">
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-check-circle"></i> Registrar
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+$(document).ready(function () {
+
+    // 🔍 Inicializar Select2 para CLIENTES
+    $('#IdCliente').select2({
+        dropdownParent: $('#modalInscripcion'),
+        width: '100%',
+        placeholder: 'Seleccione un cliente',
+        allowClear: true,
+        ajax: {
+            url: '/InscripcionCurso/BuscarClientes',
+            dataType: 'json',
+            delay: 250,
+            data: params => ({ term: params.term }),
+            processResults: data => ({ results: data })
+        }
+    });
+
+    // 🔍 Inicializar Select2 para CURSOS
+    $('#IdCurso').select2({
+        dropdownParent: $('#modalInscripcion'),
+        width: '100%',
+        placeholder: 'Seleccione un curso',
+        allowClear: true,
+        ajax: {
+            url: '/InscripcionCurso/BuscarCursos',
+            dataType: 'json',
+            delay: 250,
+            data: params => ({ term: params.term }),
+            processResults: data => ({ results: data })
+        }
+    });
+
+    // ✅ Envío AJAX
+    $('#formCrearInscripcion').on('submit', function (e) {
+        e.preventDefault();
+        const data = $(this).serialize();
+
+        $.post('/InscripcionCurso/Create', data, function (resp) {
+            mostrarResultado(resp, 'Inscripción registrada correctamente.');
+        });
+    });
+});
+</script>

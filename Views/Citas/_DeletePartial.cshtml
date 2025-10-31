@@ -1,0 +1,82 @@
+@model LiberiaDriveMVC.Models.Cita
+
+<div class="alert alert-warning">
+    <h5 class="text-danger fw-bold">
+        ⚠️ Confirmar eliminación de cita
+    </h5>
+    <p>Estás a punto de eliminar la siguiente cita. Esta acción no se puede deshacer.</p>
+</div>
+
+<form id="formEliminarCita">
+    <input type="hidden" asp-for="IdCita" />
+
+    <div class="form-group mb-2">
+        <label><strong>Cliente:</strong></label>
+        <input type="text" class="form-control" value="@Model.NombreCliente" readonly />
+    </div>
+
+    <div class="form-group mb-2">
+        <label><strong>Tipo de examen:</strong></label>
+        <input type="text" class="form-control" value="@Model.TipoExamen" readonly />
+    </div>
+
+    <div class="form-group mb-2">
+        <label><strong>Fecha de cita:</strong></label>
+        <input type="text" class="form-control" value="@Model.FechaCita.ToString("dd/MM/yyyy")" readonly />
+    </div>
+
+    <div class="form-group mb-3">
+        <label><strong>Estado:</strong></label>
+        <input type="text" class="form-control" value="@Model.Estado" readonly />
+    </div>
+
+    <div class="text-end">
+        <button type="submit" class="btn btn-danger">🗑️ Eliminar</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+    </div>
+</form>
+
+<script>
+    // =====================================
+    // Enviar formulario AJAX para eliminar
+    // =====================================
+    $(document).on("submit", "#formEliminarCita", function (e) {
+        e.preventDefault();
+
+        const id = $("input[name='IdCita']").val();
+
+        Swal.fire({
+            title: "¿Eliminar cita?",
+            text: "Esta acción no se puede deshacer.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#6c757d",
+            confirmButtonText: "Sí, eliminar",
+            cancelButtonText: "Cancelar"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.post("/Citas/DeleteConfirmed", { IdCita: id }, function (resp) {
+                    if (resp.success) {
+                        Swal.fire({
+                            icon: "success",
+                            title: "✅ Cita eliminada",
+                            text: resp.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            $("#modalCita").modal("hide");
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: "error",
+                            title: "❌ Error",
+                            text: resp.message
+                        });
+                    }
+                });
+            }
+        });
+    });
+</script>

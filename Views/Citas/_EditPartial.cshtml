@@ -1,134 +1,108 @@
 @model LiberiaDriveMVC.Models.Cita
-@{
-    Layout = null;
-}
-
-<h5 class="fw-bold text-primary mb-3">
-    ✏️ Editar Cita
-</h5>
-<hr />
 
 <form id="formEditarCita">
-    <!-- ID de la cita -->
-    <input type="hidden" name="IdCita" value="@Model.IdCita" />
+    <input type="hidden" asp-for="IdCita" />
 
-    <!-- Cliente -->
-    <div class="mb-3">
-        <label class="form-label fw-bold">Cliente</label>
-        <select id="clienteSelect" class="form-select" required>
-            <option value="@Model.IdCliente" selected>@Model.ClienteNombre</option>
-        </select>
-        <!-- Hidden real que se envía al backend -->
-        <input type="hidden" id="hiddenClienteId" name="IdCliente" value="@Model.IdCliente" />
-    </div>
-
-    <!-- Tipo de Examen -->
-    <div class="mb-3">
-        <label class="form-label fw-bold">Tipo de Examen</label>
-        <select name="TipoExamen" class="form-select" required>
-            <option value="">Seleccione un tipo...</option>
-            <option value="Teórico" selected="@(Model.TipoExamen == "Teórico")">Teórico</option>
-            <option value="Práctico" selected="@(Model.TipoExamen == "Práctico")">Práctico</option>
+    <div class="form-group mb-3">
+        <label>Cliente</label>
+        <select id="IdCliente" name="IdCliente" class="form-control select2" style="width: 100%;" required>
+            @if (!string.IsNullOrEmpty(Model.ClienteNombre))
+            {
+                <option value="@Model.IdCliente" selected>@Model.ClienteNombre</option>
+            }
         </select>
     </div>
 
-    <!-- Fecha -->
-    <div class="mb-3">
-        <label class="form-label fw-bold">Fecha de la Cita</label>
-        <input type="datetime-local" name="FechaCita" class="form-control"
-               value="@Model.FechaCita.ToString("yyyy-MM-ddTHH:mm")" required />
-    </div>
-
-    <!-- Estado -->
-    <div class="mb-3">
-        <label class="form-label fw-bold">Estado</label>
-        <select name="Estado" class="form-select" required>
-            <option value="Pendiente" selected="@(Model.Estado == "Pendiente")">Pendiente</option>
-            <option value="Finalizado" selected="@(Model.Estado == "Finalizado")">Finalizado</option>
+    <div class="form-group mb-3">
+        <label>Tipo de examen</label>
+        <select asp-for="TipoExamen" class="form-control" required>
+            <option value="">Seleccione...</option>
+            <option value="Teórico" selected="@((Model.TipoExamen == "Teórico") ? "selected" : null)">Teórico</option>
+            <option value="Práctico" selected="@((Model.TipoExamen == "Práctico") ? "selected" : null)">Práctico</option>
         </select>
     </div>
 
-    <!-- Botones -->
+    <div class="form-group mb-3">
+        <label>Fecha de cita</label>
+        <input asp-for="FechaCita" type="date" class="form-control" required min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label>Estado</label>
+        <select asp-for="Estado" class="form-control" required>
+            <option value="Pendiente" selected="@((Model.Estado == "Pendiente") ? "selected" : null)">Pendiente</option>
+            <option value="Realizada" selected="@((Model.Estado == "Realizada") ? "selected" : null)">Realizada</option>
+            <option value="Cancelada" selected="@((Model.Estado == "Cancelada") ? "selected" : null)">Cancelada</option>
+        </select>
+    </div>
+
     <div class="text-end">
-        <button type="submit" class="btn btn-primary px-4">
-            💾 Guardar cambios
-        </button>
-        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
-            Cancelar
-        </button>
+        <button type="submit" class="btn btn-primary">💾 Guardar cambios</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
     </div>
 </form>
 
-@section Scripts {
 <script>
+    // ================================
+    // Inicializar Select2 AJAX Clientes
+    // ================================
     $(document).ready(function () {
-
-        /* ========================================================
-           🔍 Inicializa Select2 con búsqueda AJAX
-        ======================================================== */
-        $("#clienteSelect").select2({
-            theme: "bootstrap-5",
-            placeholder: "Seleccione un cliente...",
-            allowClear: true,
+        $("#IdCliente").select2({
+            dropdownParent: $('#modalCita'), // o el id del modal que uses
             ajax: {
-                url: "/Citas/BuscarClientes",
-                dataType: "json",
+                url: '/Citas/BuscarClientes',
+                dataType: 'json',
                 delay: 250,
                 data: function (params) {
                     return { term: params.term };
                 },
                 processResults: function (data) {
                     return { results: data };
-                },
-                cache: true
-            },
-            language: {
-                inputTooShort: () => "Escriba al menos 1 carácter...",
-                searching: () => "Buscando clientes...",
-                noResults: () => "No se encontraron coincidencias"
-            }
-        });
-
-        // 🧩 Sincroniza el valor del select con el input hidden real
-        $("#clienteSelect").on("select2:select", function (e) {
-            const data = e.params.data;
-            $("#hiddenClienteId").val(data.id);
-        });
-
-        /* ========================================================
-           💾 Maneja el envío del formulario vía AJAX
-        ======================================================== */
-        $("#formEditarCita").off("submit").on("submit", function (e) {
-            e.preventDefault();
-
-            const data = $(this).serialize();
-            console.log("➡️ Enviando datos de edición:", data);
-
-            $.ajax({
-                type: "POST",
-                url: "/Citas/Edit",
-                data: data,
-                success: function (resp) {
-                    console.log("Respuesta del servidor:", resp);
-
-                    if (resp.success) {
-                        $("#modalCita").modal("hide");
-                        Swal.fire({
-                            icon: "success",
-                            title: "Cita actualizada correctamente",
-                            timer: 1800,
-                            showConfirmButton: false
-                        }).then(() => location.reload());
-                    } else {
-                        Swal.fire("Error", resp.message || "No se pudo actualizar la cita.", "error");
-                    }
-                },
-                error: function (xhr) {
-                    console.error("❌ Error en el envío AJAX:", xhr);
-                    Swal.fire("Error", "Error inesperado al procesar la solicitud.", "error");
                 }
-            });
+            },
+            placeholder: 'Buscar cliente...',
+            minimumInputLength: 1
         });
     });
+
+    // ================================
+    // Enviar formulario AJAX
+    // ================================
+    $(document).on("submit", "#formEditarCita", function (e) {
+        e.preventDefault();
+
+        const data = $(this).serialize();
+
+        $.post("/Citas/Edit", data, function (resp) {
+            if (resp.success) {
+                mostrarResultado(resp, "Cita actualizada correctamente.");
+            } else {
+                mostrarError(resp.message);
+            }
+        });
+    });
+
+    // ================================
+    // Funciones de feedback
+    // ================================
+    function mostrarResultado(resp, mensaje) {
+        $("#modalCita").modal("hide");
+        Swal.fire({
+            icon: "success",
+            title: "✅ Éxito",
+            text: mensaje,
+            timer: 2000,
+            showConfirmButton: false
+        }).then(() => {
+            location.reload();
+        });
+    }
+
+    function mostrarError(mensaje) {
+        Swal.fire({
+            icon: "error",
+            title: "❌ Error",
+            text: mensaje
+        });
+    }
 </script>
-}

@@ -1,0 +1,26 @@
+@model dynamic
+
+<div class="p-3 text-center">
+    <p>¿Está seguro que desea eliminar la inscripción del cliente <strong>@Model.NombreCliente</strong>?</p>
+    <p>Curso: <strong>@Model.TipoCurso</strong></p>
+    <p>Fecha: <strong>@Model.FechaInscripcion</strong></p>
+
+    <form id="formEliminarInscripcion">
+        <input type="hidden" name="IdInscripcion" value="@Model.IdInscripcion" />
+        <div class="text-center mt-3">
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash"></i> Eliminar
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+$(document).on("submit", "#formEliminarInscripcion", function (e) {
+    e.preventDefault();
+    const data = $(this).serialize();
+    $.post("/InscripcionCurso/DeleteConfirmed", data, function (resp) {
+        mostrarResultado(resp, "Inscripción eliminada correctamente.");
+    });
+});
+</script>
