@@ -35,7 +35,33 @@ namespace LiberiaDriveMVC.Services
     return dt;
 }
 
-        
+     // =====================================================
+// ✅ MÉTODO: Ejecutar consultas SQL directas (SELECT)
+// =====================================================
+public DataTable EjecutarQuery(string query, Dictionary<string, object>? parametros = null)
+{
+    using (var conn = new SqlConnection(_connectionString))
+    {
+        using (var cmd = new SqlCommand(query, conn))
+        {
+            cmd.CommandType = CommandType.Text;
+
+            if (parametros != null)
+            {
+                foreach (var p in parametros)
+                    cmd.Parameters.AddWithValue(p.Key, p.Value ?? DBNull.Value);
+            }
+
+            var dt = new DataTable();
+            using (var da = new SqlDataAdapter(cmd))
+            {
+                da.Fill(dt);
+            }
+            return dt;
+        }
+    }
+}
+   
 
         // ✅ NonQuery: puede ejecutar SP o SQL directo (¡la nueva sobrecarga!)
         public int EjecutarSPNonQuery(string queryOrSP, Dictionary<string, object>? parametros = null, bool isSql = false)

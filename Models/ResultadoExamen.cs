@@ -11,13 +11,6 @@ namespace LiberiaDriveMVC.Models
         public int IdResultado { get; set; }
 
         // ==============================================
-        // ✅ INSCRIPCIÓN (vinculada al curso)
-        // ==============================================
-        [Required(ErrorMessage = "Debe seleccionar una inscripción válida.")]
-        [Display(Name = "Inscripción al curso")]
-        public int IdInscripcion { get; set; }
-
-        // ==============================================
         // ✅ CLIENTE
         // ==============================================
         [Required(ErrorMessage = "Debe seleccionar un cliente.")]
@@ -28,8 +21,9 @@ namespace LiberiaDriveMVC.Models
         // ✅ TIPO DE EXAMEN (Teórico o Práctico)
         // ==============================================
         [Required(ErrorMessage = "Debe indicar el tipo de examen.")]
+        [StringLength(50, ErrorMessage = "El tipo de examen no debe superar los 50 caracteres.")]
         [Display(Name = "Tipo de examen")]
-        public string TipoExamen { get; set; } = null!;  // "Teórico" o "Práctico"
+        public string TipoExamen { get; set; } = null!;
 
         // ==============================================
         // ✅ FECHA DEL EXAMEN
@@ -52,13 +46,10 @@ namespace LiberiaDriveMVC.Models
         public int? IdInstructor { get; set; }
 
         // ==============================================
-        // 🔗 RELACIONES DE NAVEGACIÓN
+        // 🔗 RELACIONES DE NAVEGACIÓN (para compatibilidad futura)
         // ==============================================
         [ValidateNever]
-        public virtual InscripcionCurso IdInscripcionNavigation { get; set; } = null!;
-
-        [ValidateNever]
-        public virtual Cliente IdClienteNavigation { get; set; } = null!;
+        public virtual Cliente? IdClienteNavigation { get; set; }
 
         [ValidateNever]
         public virtual Instructor? IdInstructorNavigation { get; set; }

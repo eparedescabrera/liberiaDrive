@@ -1,0 +1,154 @@
+@model LiberiaDriveMVC.Models.ResultadoExamen
+
+<div class="p-3">
+    <form id="formCrearResultado" autocomplete="off">
+        <!-- ✅ CLIENTE -->
+        <div class="form-group mb-3">
+            <label><strong>Cliente:</strong></label>
+            <select id="IdCliente" name="IdCliente" class="form-control select2" style="width:100%;" required></select>
+        </div>
+
+        <!-- ✅ TIPO DE EXAMEN -->
+        <div class="form-group mb-3">
+            <label><strong>Tipo de Examen:</strong></label>
+            <select id="TipoExamen" name="TipoExamen" class="form-select" required>
+                <option value="">Seleccione un tipo</option>
+                <option value="Teórico">Teórico</option>
+                <option value="Práctico">Práctico</option>
+            </select>
+        </div>
+
+        <!-- ✅ FECHA EXAMEN -->
+        <div class="form-group mb-3">
+            <label><strong>Fecha del Examen:</strong></label>
+            <input asp-for="FechaExamen"
+                   id="FechaExamen"
+                   class="form-control calendario"
+                   placeholder="Seleccione una fecha"
+                   required />
+        </div>
+
+        <!-- ✅ INSTRUCTOR (solo si es práctico) -->
+        <div class="form-group mb-3" id="divInstructor" style="display:none;">
+            <label><strong>Instructor responsable:</strong></label>
+            <select id="IdInstructor" name="IdInstructor" class="form-control select2" style="width:100%;"></select>
+        </div>
+
+        <!-- ✅ RESULTADO -->
+        <div class="form-group mb-3">
+            <label><strong>Resultado:</strong></label>
+            <select id="Aprobado" name="Aprobado" class="form-select" required>
+                <option value="">Seleccione resultado</option>
+                <option value="true">Aprobado</option>
+                <option value="false">Reprobado</option>
+            </select>
+        </div>
+
+        <!-- ✅ BOTÓN GUARDAR -->
+        <div class="text-end mt-3">
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-check-circle"></i> Guardar Resultado
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+$(document).ready(function () {
+
+    // =====================================================
+    // 🔍 Select2 - Clientes
+    // =====================================================
+    $('#IdCliente').select2({
+        dropdownParent: $('#modalResultado'),
+        theme: 'bootstrap-5',
+        width: '100%',
+        placeholder: 'Seleccione un cliente',
+        allowClear: true,
+        ajax: {
+            url: '/ResultadoExamen/BuscarClientes',
+            dataType: 'json',
+            delay: 250,
+            data: params => ({ term: params.term }),
+            processResults: data => ({ results: data })
+        }
+    });
+
+    // =====================================================
+    // 🔍 Select2 - Instructores
+    // =====================================================
+    $('#IdInstructor').select2({
+        dropdownParent: $('#modalResultado'),
+        theme: 'bootstrap-5',
+        width: '100%',
+        placeholder: 'Seleccione un instructor',
+        allowClear: true,
+        ajax: {
+            url: '/ResultadoExamen/BuscarInstructores',
+            dataType: 'json',
+            delay: 250,
+            data: params => ({ term: params.term }),
+            processResults: data => ({ results: data })
+        }
+    });
+
+    // =====================================================
+    // 🎯 Mostrar / ocultar campo Instructor
+    // =====================================================
+    $('#TipoExamen').on('change', function () {
+        const tipo = $(this).val();
+        if (tipo === 'Práctico') {
+            $('#divInstructor').slideDown();
+            $('#IdInstructor').attr('required', true);
+        } else {
+            $('#divInstructor').slideUp();
+            $('#IdInstructor').val(null).trigger('change');
+            $('#IdInstructor').attr('required', false);
+        }
+    });
+
+    // =====================================================
+    // 📅 Flatpickr - Calendario
+    // =====================================================
+    flatpickr(".calendario", {
+        dateFormat: "d/m/Y",
+        altInput: true,
+        altFormat: "l j \\de F \\de Y",
+        locale: "es",
+        minDate: "today",
+        disableMobile: true,
+        theme: "material_blue"
+    });
+
+    // =====================================================
+    // 🚀 Envío AJAX (solo una vez)
+    // =====================================================
+    $(document).off('submit', '#formCrearResultado').on('submit', '#formCrearResultado', function (e) {
+        e.preventDefault();
+
+        const data = $(this).serialize();
+
+        $.post('/ResultadoExamen/Create', data)
+            .done(function (resp) {
+                if (resp.success) {
+                    mostrarResultado(resp, 'Resultado registrado correctamente.');
+                    $('#formCrearResultado')[0].reset();
+                    $('#IdCliente, #IdInstructor').val(null).trigger('change');
+                } else {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Advertencia',
+                        text: resp.message
+                    });
+                }
+            })
+            .fail(function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Ocurrió un problema al registrar el resultado.'
+                });
+            });
+    });
+});
+</script>

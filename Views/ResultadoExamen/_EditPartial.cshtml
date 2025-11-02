@@ -1,0 +1,157 @@
+@model LiberiaDriveMVC.Models.ResultadoExamen
+
+<div class="p-3">
+<form id="formEditarResultado" autocomplete="off">
+    <input type="hidden" name="IdResultado" value="@Model.IdResultado" />
+
+    <!-- ✅ CLIENTE -->
+    <div class="form-group mb-3">
+        <label><strong>Cliente:</strong></label>
+        <input class="form-control" value="@Model.IdClienteNavigation?.Nombre" readonly />
+        <input type="hidden" name="IdCliente" value="@Model.IdCliente" />
+    </div>
+
+    <!-- ✅ TIPO DE EXAMEN -->
+    <div class="form-group mb-3">
+        <label><strong>Tipo de Examen:</strong></label>
+        <select id="TipoExamen" name="TipoExamen" class="form-select" required>
+            <option value="">Seleccione un tipo</option>
+            @if (Model.TipoExamen == "Teórico")
+            {
+                <option value="Teórico" selected>Teórico</option>
+                <option value="Práctico">Práctico</option>
+            }
+            else
+            {
+                <option value="Teórico">Teórico</option>
+                <option value="Práctico" selected>Práctico</option>
+            }
+        </select>
+    </div>
+
+    <!-- ✅ FECHA DEL EXAMEN -->
+    <div class="form-group mb-3">
+        <label><strong>Fecha del Examen:</strong></label>
+        <input type="text"
+               id="FechaExamen"
+               name="FechaExamen"
+               class="form-control calendario"
+               value="@(Model.FechaExamen == default ? "" : Model.FechaExamen.ToString("dd/MM/yyyy"))"
+               required />
+    </div>
+
+    <!-- ✅ INSTRUCTOR (solo si es práctico) -->
+    <div class="form-group mb-3" id="divInstructor" style="@(Model.TipoExamen == "Práctico" ? "" : "display:none;")">
+        <label><strong>Instructor responsable:</strong></label>
+        <select id="IdInstructor" name="IdInstructor" class="form-control select2" style="width:100%;">
+            @if (Model.IdInstructorNavigation != null)
+            {
+                <option value="@Model.IdInstructor" selected>
+                    @($"{Model.IdInstructorNavigation.Nombre} {Model.IdInstructorNavigation.Apellidos}")
+                </option>
+            }
+        </select>
+    </div>
+
+    <!-- ✅ RESULTADO -->
+    <div class="form-group mb-3">
+        <label><strong>Resultado:</strong></label>
+        <select id="Aprobado" name="Aprobado" class="form-select" required>
+            <option value="">Seleccione resultado</option>
+            @if (Model.Aprobado)
+            {
+                <option value="true" selected>Aprobado</option>
+                <option value="false">Reprobado</option>
+            }
+            else
+            {
+                <option value="true">Aprobado</option>
+                <option value="false" selected>Reprobado</option>
+            }
+        </select>
+    </div>
+
+    <!-- ✅ BOTÓN GUARDAR -->
+    <div class="text-end mt-3">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-save"></i> Actualizar Resultado
+        </button>
+    </div>
+</form>
+</div>
+
+@section Scripts {
+<script>
+$(document).ready(function () {
+
+    // =====================================================
+    // 🔍 Inicializar Select2 para instructores
+    // =====================================================
+    $('#IdInstructor').select2({
+        dropdownParent: $('#modalResultado'),
+        theme: 'bootstrap-5',
+        width: '100%',
+        placeholder: 'Seleccione un instructor',
+        allowClear: true,
+        ajax: {
+            url: '/ResultadoExamen/BuscarInstructores',
+            dataType: 'json',
+            delay: 250,
+            data: params => ({ term: params.term }),
+            processResults: data => ({ results: data })
+        }
+    });
+
+    // =====================================================
+    // 🎯 Mostrar / ocultar campo Instructor
+    // =====================================================
+    function actualizarInstructor() {
+        const tipo = $('#TipoExamen').val();
+        if (tipo === 'Práctico') {
+            $('#divInstructor').slideDown();
+            $('#IdInstructor').prop('disabled', false).attr('required', true);
+        } else {
+            $('#divInstructor').slideUp();
+            $('#IdInstructor').val(null).trigger('change');
+            $('#IdInstructor').prop('disabled', true).attr('required', false);
+        }
+    }
+
+    actualizarInstructor();
+    $('#TipoExamen').on('change', actualizarInstructor);
+
+    // =====================================================
+    // 📅 Flatpickr - calendario funcional
+    // =====================================================
+    flatpickr(".calendario", {
+        dateFormat: "d/m/Y",
+        altInput: true,
+        altFormat: "l j \\de F \\de Y",
+        locale: "es",
+        disableMobile: true,
+        theme: "material_blue",
+        defaultDate: "@(Model.FechaExamen == default ? "" : Model.FechaExamen.ToString("yyyy-MM-dd"))"
+    });
+
+    // =====================================================
+    // 🚀 Envío AJAX
+    // =====================================================
+    $('#formEditarResultado').on('submit', function (e) {
+        e.preventDefault();
+        const data = $(this).serialize();
+
+        $.post('/ResultadoExamen/Edit', data)
+            .done(function (resp) {
+                mostrarResultado(resp, 'Resultado actualizado correctamente.');
+            })
+            .fail(function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo actualizar el resultado.'
+                });
+            });
+    });
+});
+</script>
+}

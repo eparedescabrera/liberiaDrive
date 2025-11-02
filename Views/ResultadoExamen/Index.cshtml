@@ -1,0 +1,94 @@
+@{
+    ViewData["Title"] = "Resultados de Exámenes";
+    var resultados = ViewBag.Resultados as System.Data.DataTable;
+    Layout = "_AdminLayout";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fw-bold text-primary">
+            <i class="bi bi-clipboard-check"></i> Resultados de Exámenes
+        </h2>
+        <button class="btn btn-success" id="btnNuevoResultado">
+            <i class="bi bi-plus-circle"></i> Nuevo Resultado
+        </button>
+    </div>
+
+    <table id="tablaResultados" class="table table-bordered table-striped align-middle">
+        <thead class="table-primary">
+            <tr class="text-center">
+                <th hidden>IdResultado</th> <!-- columna oculta -->
+                <th>Cliente</th>
+                <th>Tipo Examen</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Instructor</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (System.Data.DataRow row in resultados.Rows)
+            {
+                <tr class="text-center">
+                    <td hidden>@row["IdResultado"]</td> <!-- oculta -->
+                    <td>@row["Cliente"]</td>
+                    <td>@row["TipoExamen"]</td>
+                    <td>@row["FechaExamen"]</td>
+                    <td>
+                        @if (row["Estado"].ToString() == "Aprobado")
+                        {
+                            <span class="badge bg-success">Aprobado</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Reprobado</span>
+                        }
+                    </td>
+                    <td>@row["Instructor"]</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary me-1 btn-editar-resultado" data-id="@row["IdResultado"]">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger btn-eliminar-resultado" data-id="@row["IdResultado"]">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="modalResultado" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="tituloModal"><i class="bi bi-pencil-square"></i></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="contenidoModal"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $("#tablaResultados").DataTable({
+                language: {
+                    url: "/datatables/lang/es-ES.json"
+                },
+                pageLength: 8,
+                lengthChange: false,
+                order: [[2, "desc"]], // ordenar por FechaExamen
+                columnDefs: [
+                    { orderable: false, targets: 5 } // desactiva orden en Acciones
+                ]
+            });
+        });
+    </script>
+
+    <script src="~/js/resultadoExamen.js"></script>
+}

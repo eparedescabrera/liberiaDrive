@@ -1,0 +1,32 @@
+@model LiberiaDriveMVC.Models.ResultadoExamen
+
+<div class="text-center p-4">
+    <i class="bi bi-exclamation-triangle text-danger" style="font-size:3rem;"></i>
+    <h4 class="mt-3">¿Desea eliminar este resultado de examen?</h4>
+
+    <p class="text-muted mt-2">
+        <strong>Cliente:</strong> @(Model.IdClienteNavigation?.Nombre ?? "Sin datos")<br />
+        <strong>Tipo:</strong> @Model.TipoExamen<br />
+        <strong>Fecha:</strong> @Model.FechaExamen.ToString("dd/MM/yyyy")<br />
+        <strong>Instructor:</strong> @(Model.IdInstructorNavigation?.Nombre ?? "No aplica")
+    </p>
+
+    <div class="mt-4">
+        <button id="btnEliminarResultado" class="btn btn-danger me-2">
+            <i class="bi bi-trash"></i> Eliminar
+        </button>
+        <button class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle"></i> Cancelar
+        </button>
+    </div>
+</div>
+
+<script>
+$(document).ready(function () {
+    $('#btnEliminarResultado').click(function () {
+        $.post('/ResultadoExamen/DeleteConfirmed', { id: @Model.IdResultado }, function (resp) {
+            mostrarResultado(resp, 'Resultado eliminado correctamente.');
+        });
+    });
+});
+</script>
