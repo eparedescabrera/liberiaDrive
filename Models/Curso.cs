@@ -18,6 +18,7 @@ namespace LiberiaDriveMVC.Models
 
         [Required(ErrorMessage = "El costo es obligatorio.")]
         [Range(1, 1000000, ErrorMessage = "El costo debe ser mayor a 0.")]
+        
         public decimal Costo { get; set; }
         // ✅ Relación con tabla CursoTipo
          public virtual CursoTipo CursoTipo { get; set; } = null!;

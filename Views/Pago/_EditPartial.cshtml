@@ -1,0 +1,117 @@
+@model LiberiaDriveMVC.Models.Pago
+
+<form id="formEditarPago">
+    <input type="hidden" asp-for="IdPago" />
+
+    <div class="row mb-3">
+        <!-- 🔹 INSCRIPCIÓN -->
+        <div class="col-md-12">
+            <label for="IdInscripcion" class="form-label fw-bold">Inscripción</label>
+            <select id="IdInscripcion" name="IdInscripcion" class="form-select" required></select>
+            <span asp-validation-for="IdInscripcion" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <!-- 🔹 FECHA -->
+        <div class="col-md-6">
+            <label asp-for="FechaPago" class="form-label fw-bold">Fecha de Pago</label>
+            <input asp-for="FechaPago" type="date" class="form-control" required />
+            <span asp-validation-for="FechaPago" class="text-danger"></span>
+        </div>
+
+        <!-- 🔹 MONTO -->
+        <div class="col-md-6">
+            <label asp-for="Monto" class="form-label fw-bold">Monto (₡)</label>
+            <input asp-for="Monto" id="Monto" type="number" step="0.01" min="0" class="form-control" required />
+            <span asp-validation-for="Monto" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <!-- 🔹 TIPO DE PAGO -->
+        <div class="col-md-6">
+            <label asp-for="TipoPago" class="form-label fw-bold">Tipo de Pago</label>
+            <select asp-for="TipoPago" class="form-select">
+                <option value="Efectivo" selected="@Model.TipoPago == "Efectivo"">Efectivo</option>
+                <option value="Sinpe" selected="@Model.TipoPago == "Sinpe"">Sinpe</option>
+                <option value="Tarjeta" selected="@Model.TipoPago == "Tarjeta"">Tarjeta</option>
+                <option value="Transferencia" selected="@Model.TipoPago == "Transferencia"">Transferencia</option>
+            </select>
+        </div>
+
+        <!-- 🔹 ESTADO -->
+        <div class="col-md-6">
+            <label asp-for="Estado" class="form-label fw-bold">Estado</label>
+            <select asp-for="Estado" class="form-select">
+                <option value="Completado" selected="@Model.Estado == "Completado"">Completado</option>
+                <option value="Pendiente" selected="@Model.Estado == "Pendiente"">Pendiente</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- 🔹 BOTONES -->
+    <div class="text-end">
+        <button type="submit" class="btn btn-success">💾 Guardar Cambios</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">❌ Cancelar</button>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        // =====================================================
+        // 🧭 SELECT2 - BUSCAR INSCRIPCIONES (con horas)
+        // =====================================================
+        $("#IdInscripcion").select2({
+            theme: "bootstrap-5",
+            placeholder: "Buscar inscripción...",
+            dropdownParent: $("#modalPago"),
+            ajax: {
+                url: "/Pago/BuscarInscripciones",
+                dataType: "json",
+                delay: 250,
+                data: function (params) {
+                    return { Texto: params.term };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data.map(item => ({
+                            id: item.id,
+                            text: item.text,
+                            costo: item.costo
+                        }))
+                    };
+                },
+                cache: true
+            }
+        });
+
+        // =====================================================
+        // 💰 AUTO LLENAR MONTO SEGÚN INSCRIPCIÓN
+        // =====================================================
+        $("#IdInscripcion").on("select2:select", function (e) {
+            const data = e.params.data;
+            if (data && data.costo) {
+                $("#Monto").val(data.costo.toFixed(2));
+            }
+        });
+
+        // =====================================================
+        // 🔁 CARGAR INSCRIPCIÓN ACTUAL AL ABRIR MODAL
+        // =====================================================
+        const idActual = @Model.IdInscripcion;
+        if (idActual) {
+            $.ajax({
+                url: '/Pago/BuscarInscripciones',
+                data: { Texto: '' },
+                success: function (data) {
+                    const actual = data.find(x => x.id == idActual);
+                    if (actual) {
+                        const option = new Option(actual.text, actual.id, true, true);
+                        $("#IdInscripcion").append(option).trigger('change');
+                    }
+                }
+            });
+        }
+    </script>
+}

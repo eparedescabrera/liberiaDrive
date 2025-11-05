@@ -1,143 +1,141 @@
-// =====================================================
-// 📦 Módulo: Vehículos (LiberiaDrive)
-// Autor: José Paredes Cabrera
-// =====================================================
+﻿// ===================================================
+// ✅ vehiculos.js
+// ===================================================
 
-// 🎯 Función genérica para abrir modal con carga
-function abrirModalGenerico(titulo, url) {
-    $("#tituloModal").html(titulo);
-    $("#contenidoModal").html(`
-        <div class="d-flex flex-column align-items-center justify-content-center py-5 text-center text-muted">
-            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
-            <p class="fw-semibold">Cargando información...</p>
-        </div>
-    `);
+$(document).ready(function () {
 
-    const modal = new bootstrap.Modal(document.getElementById("modalVehiculo"));
-    modal.show();
+    // ===============================================
+    // 🔍 BUSCAR POR PLACA
+    // ===============================================
+    $("#btnBuscar").click(function () {
+        const placa = $("#txtBuscarPlaca").val().trim();
+        $.get("/Vehiculos/BuscarPorPlaca", { placa }, function (resp) {
+            if (resp.success) {
+                const tbody = $("#tbodyVehiculos");
+                tbody.empty();
 
-    $.ajax({
-        url: url,
-        type: "GET",
-        success: function (data) {
-            $("#contenidoModal").hide().html(data).fadeIn(300);
-        },
-        error: function (xhr) {
-            $("#contenidoModal").html(`
-                <div class="text-center py-5">
-                    <i class="bi bi-exclamation-triangle text-danger display-4"></i>
-                    <p class="mt-3 fw-bold text-danger">Error al cargar el contenido.</p>
-                    <p class="text-muted">${xhr.responseText}</p>
-                </div>
-            `);
-        }
+                if (!resp.data || resp.data.length === 0) {
+                    tbody.append("<tr><td colspan='6' class='text-center'>No se encontraron resultados.</td></tr>");
+                    return;
+                }
+
+                resp.data.forEach(v => {
+                    tbody.append(`
+                        <tr>
+                            <td>${v.Marca}</td>
+                            <td>${v.Modelo}</td>
+                            <td>${v.Transmision}</td>
+                            <td>${v.Placa}</td>
+                            <td>${v.Estado}</td>
+                            <td>
+                                <button class="btn btn-warning btn-sm" onclick="abrirModalEditar(${v.IdVehiculo})">✏️</button>
+                                <button class="btn btn-danger btn-sm" onclick="eliminarVehiculo(${v.IdVehiculo})">🗑️</button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            }
+        });
     });
-}
 
-// =====================================================
-// 🆕 CREAR VEHÍCULO
-// =====================================================
-function abrirModalCrear() {
-    abrirModalGenerico(`<i class="bi bi-plus-circle"></i> Nuevo Vehículo`, "/Vehiculos/Create");
-}
+    // ===============================================
+    // ➕ ABRIR MODAL CREAR
+    // ===============================================
+    $("#btnNuevo").click(function () {
+        $("#tituloModal").text("Agregar Vehículo");
+        $("#contenidoModal").load("/Vehiculos/Create", function () {
+            $("#modalVehiculo").modal("show");
+        });
+    });
 
-// =====================================================
-// ✏️ EDITAR VEHÍCULO
-// =====================================================
-function abrirModalEditar(id) {
-    abrirModalGenerico(`<i class="bi bi-pencil-square"></i> Editar Vehículo`, `/Vehiculos/Edit/${id}`);
-}
-
-// =====================================================
-// 🔍 DETALLES VEHÍCULO
-// =====================================================
-function abrirModalDetalles(id) {
-    abrirModalGenerico(`<i class="bi bi-eye"></i> Detalles del Vehículo`, `/Vehiculos/Details/${id}`);
-}
-
-// =====================================================
-// 🗑️ ELIMINAR VEHÍCULO
-// =====================================================
-function abrirModalEliminar(id) {
-    abrirModalGenerico(`<i class="bi bi-trash3 text-danger"></i> Eliminar Vehículo`, `/Vehiculos/Delete/${id}`);
-}
-
-// =====================================================
-// 💾 EVENTO SUBMIT GLOBAL para Crear/Editar
-// =====================================================
-$(document).off("submit", "#formCrearVehiculo, #formEditarVehiculo")
-.on("submit", "#formCrearVehiculo, #formEditarVehiculo", function (e) {
-    e.preventDefault();
-
-    const form = $(this);
-    const action = form.attr("id").includes("Editar") ? "actualizado" : "registrado";
-
-    $.ajax({
-        url: form.attr("id").includes("Editar") ? "/Vehiculos/Edit" : "/Vehiculos/Create",
-        type: "POST",
-        data: form.serialize(),
-        success: function (resp) {
+    // ===============================================
+    // 💾 CREAR VEHÍCULO (POST)
+    // ===============================================
+    $(document).on("submit", "#formCrearVehiculo", function (e) {
+        e.preventDefault();
+        $.post("/Vehiculos/Create", $(this).serialize(), function (resp) {
             if (resp.success) {
                 Swal.fire({
                     icon: "success",
-                    title: `Vehículo ${action} correctamente`,
+                    title: "Vehículo registrado correctamente",
                     showConfirmButton: false,
                     timer: 1500
                 });
                 $("#modalVehiculo").modal("hide");
-                setTimeout(() => location.reload(), 1200);
+                setTimeout(() => location.reload(), 1500);
             } else {
-                Swal.fire("Error", resp.message, "error");
+                Swal.fire("Error", resp.message || "No se pudo registrar el vehículo.", "error");
             }
-        },
-        error: function () {
-            Swal.fire("Error", "No se pudo procesar la solicitud.", "error");
-        }
+        });
+    });
+
+    // ===============================================
+    // ✏️ EDITAR VEHÍCULO (POST)
+    // ===============================================
+    $(document).on("submit", "#formEditarVehiculo", function (e) {
+        e.preventDefault();
+        $.post("/Vehiculos/Edit", $(this).serialize(), function (resp) {
+            if (resp.success) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Vehículo actualizado correctamente",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+                $("#modalVehiculo").modal("hide");
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                Swal.fire("Error", resp.message || "No se pudo actualizar el vehículo.", "error");
+            }
+        });
     });
 });
 
-// =====================================================
-// 🧹 EVENTO SUBMIT para ELIMINAR
-// =====================================================
-$(document).off("submit", "#formEliminarVehiculo")
-.on("submit", "#formEliminarVehiculo", function (e) {
-    e.preventDefault();
-    const id = $("#IdVehiculo").val();
+// ===================================================
+// 🔹 FUNCIONES GLOBALES
+// ===================================================
 
+// Editar (carga el partial en modal)
+function abrirModalEditar(id) {
+    $("#tituloModal").text("Editar Vehículo");
+    $("#contenidoModal").load("/Vehiculos/Edit/" + id, function () {
+        $("#modalVehiculo").modal("show");
+    });
+}
+// Ver detalles del vehículo
+function abrirModalDetalles(id) {
+    $("#tituloModal").text("Detalles del Vehículo");
+    $("#contenidoModal").load("/Vehiculos/Details/" + id, function () {
+        $("#modalVehiculo").modal("show");
+    });
+}
+
+// Eliminar (SweetAlert + AJAX)
+function eliminarVehiculo(id) {
     Swal.fire({
-        title: "¿Eliminar vehículo?",
-        text: "Esta acción no se puede deshacer.",
-        icon: "warning",
+        title: '¿Está seguro?',
+        text: 'El vehículo será eliminado permanentemente.',
+        icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#6c757d",
-        confirmButtonText: "Sí, eliminar",
-        cancelButtonText: "Cancelar"
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
-            $.ajax({
-                url: "/Vehiculos/DeleteConfirmed",
-                type: "POST",
-                data: { IdVehiculo: id },
-                success: function (resp) {
-                    if (resp.success) {
-                        Swal.fire({
-                            icon: "success",
-                            title: "Vehículo eliminado",
-                            text: resp.message,
-                            timer: 1500,
-                            showConfirmButton: false
-                        });
-                        $("#modalVehiculo").modal("hide");
-                        setTimeout(() => location.reload(), 1200);
-                    } else {
-                        Swal.fire("Error", resp.message, "error");
-                    }
-                },
-                error: function () {
-                    Swal.fire("Error", "No se pudo eliminar el vehículo.", "error");
+            $.post("/Vehiculos/DeleteConfirmed", { id }, function (resp) {
+                if (resp.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Eliminado correctamente',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    Swal.fire("Error", resp.message || "No se pudo eliminar el vehículo.", "error");
                 }
             });
         }
     });
-});
+}

@@ -1,112 +1,71 @@
+@using System.Data
 @{
-    ViewData["Title"] = "Gestión de Vehículos";
+    ViewBag.Title = "Gestión de Vehículos";
+    var vehiculos = ViewBag.Vehiculos as DataTable;
     Layout = "_AdminLayout";
 }
 
-<h2 class="fw-bold text-center my-3">🚗 Gestión de Vehículos</h2>
-<!-- 🔍 Buscador -->
-<form class="d-flex justify-content-end mb-3" method="get">
-    <input type="text"
-           name="searchPlaca"
-           value="@ViewBag.SearchPlaca"
-           class="form-control w-25 me-2"
-           placeholder="🔎 Buscar por placa..."
-           autocomplete="off" />
-    <button class="btn btn-primary">Buscar</button>
+<div class="container mt-4">
+    <h2 class="mb-4">🚗 Gestión de Vehículos</h2>
 
-    @if(!string.IsNullOrWhiteSpace(ViewBag.SearchPlaca))
-    {
-        <a href="/Vehiculos/Index" class="btn btn-secondary ms-2">Limpiar</a>
-    }
-</form>
+    <!-- 🔍 Buscador -->
+    <div class="mb-3 d-flex gap-2">
+        <input type="text" id="txtBuscarPlaca" class="form-control w-25" placeholder="Buscar por placa...">
+        <button class="btn btn-primary" id="btnBuscar">Buscar</button>
+        <button class="btn btn-success" id="btnNuevo">➕ Nuevo Vehículo</button>
+    </div>
 
-<!-- 🔹 Botón Nuevo Vehículo -->
-<div class="text-end mb-3">
-    <button class="btn btn-primary" onclick="abrirModalCrear()">
-        ➕ Nuevo Vehículo
-    </button>
-</div>
-
-<!-- 🔹 Tabla Responsiva Mejorada -->
-<div class="table-responsive">
-    <table class="table table-hover align-middle text-center">
-        <thead class="table-dark">
+    <!-- 🧾 Tabla -->
+    <table class="table table-bordered table-hover align-middle" id="tablaVehiculos">
+        <thead class="table-light">
             <tr>
                 <th>Marca</th>
                 <th>Modelo</th>
                 <th>Transmisión</th>
-                <th>Estado</th>
                 <th>Placa</th>
-                <th class="text-center">Acciones</th>
+                <th>Estado</th>
+                <th>Acciones</th>
             </tr>
         </thead>
-        <tbody>
-        @foreach (System.Data.DataRow row in ViewBag.Vehiculos.Rows)
-        {
-            <tr class="@(Convert.ToBoolean(row["Estado"]) ? "" : "table-secondary")">
-                <td>@row["Marca"]</td>
-                <td>@row["Modelo"]</td>
-                <td>@row["Transmision"]</td>
-                <td>
-                    @if (Convert.ToBoolean(row["Estado"]))
-                    { <span class="badge bg-success">Activo</span> }
-                    else
-                    { <span class="badge bg-danger">Inactivo</span> }
-                </td>
-                <td>@row["Placa"]</td>
-                <td>
-                    <div class="d-flex flex-wrap gap-1 justify-content-center">
-
-                        <button class="btn btn-warning btn-sm"
-                                onclick="abrirModalEditar(@row["IdVehiculo"])">
-                            <i class="bi bi-pencil-square"></i>
-                            <span class="d-none d-md-inline"> Editar</span>
-                        </button>
-
-                        <button class="btn btn-info btn-sm text-white"
-                                onclick="abrirModalDetalles(@row["IdVehiculo"])">
-                            <i class="bi bi-search"></i>
-                            <span class="d-none d-md-inline"> Ver</span>
-                        </button>
-
-                        <button class="btn btn-danger btn-sm"
-                                onclick="abrirModalEliminar(@row["IdVehiculo"])">
-                            <i class="bi bi-trash"></i>
-                            <span class="d-none d-md-inline"> Eliminar</span>
-                        </button>
-
-                    </div>
-                </td>
-            </tr>
-        }
+        <tbody id="tbodyVehiculos">
+            @if (vehiculos != null)
+            {
+                foreach (DataRow row in vehiculos.Rows)
+                {
+                    <tr>
+                        <td>@row["Marca"]</td>
+                        <td>@row["Modelo"]</td>
+                        <td>@row["Transmision"]</td>
+                        <td>@row["Placa"]</td>
+                        <td>@Html.Raw(row["Estado"].ToString())</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="abrirModalEditar(@row["IdVehiculo"])">
+                                ✏️ Editar
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="eliminarVehiculo(@row["IdVehiculo"])">
+                                🗑️ Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
         </tbody>
     </table>
 </div>
 
-
-<!-- 🔹 Modal Genérico -->
+<!-- 🔹 Modal para Crear/Editar -->
 <div class="modal fade" id="modalVehiculo" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content shadow-lg">
-            <div class="modal-header bg-dark text-white">
-                <h5 class="modal-title" id="tituloModal">Vehículo</h5>
-                <button type="button" class="btn-close btn-close-white"
-                        data-bs-dismiss="modal" aria-label="Cerrar"></button>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 id="tituloModal" class="modal-title"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" id="contenidoModal">
-                <div class="text-center py-4">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Cargando...</span>
-                    </div>
-                </div>
-            </div>
+            <div class="modal-body" id="contenidoModal"></div>
         </div>
     </div>
 </div>
 
-
-<!-- 🔹 Scripts -->
 @section Scripts {
-    <script src="~/js/vehiculo.js?v=@DateTime.Now.Ticks"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="~/js/vehiculo.js"></script>
 }

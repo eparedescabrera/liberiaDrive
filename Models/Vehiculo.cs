@@ -27,8 +27,10 @@ namespace LiberiaDriveMVC.Models
         [RegularExpression(@"^[A-Za-z0-9\-]+$", ErrorMessage = "Solo puede contener letras, números y guiones.")]
         public string Placa { get; set; } = null!;
 
-        // ✅ Bool normal para evitar errores en checkbox
-        public bool Estado { get; set; } = true;
+        // 🚦 Ahora es un texto, no un booleano
+        [Required(ErrorMessage = "Debe especificar el estado del vehículo.")]
+        [RegularExpression(@"^(Disponible|En uso|En mantenimiento)$", ErrorMessage = "Estado inválido.")]
+        public string Estado { get; set; } = "Disponible";
 
         // Relaciones
         public virtual ICollection<MantenimientoVehiculo> MantenimientoVehiculo { get; set; } = new List<MantenimientoVehiculo>();

@@ -4,80 +4,59 @@
     Layout = "_AdminLayout";
 }
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="fw-bold text-primary"><i class="bi bi-calendar-check"></i> Sesiones Prácticas</h2>
-        <button class="btn btn-success" id="btnNuevaSesion">
-            <i class="bi bi-plus-circle"></i> Nueva Sesión
-        </button>
-    </div>
-
-    <table id="tablaSesiones" class="table table-bordered table-striped align-middle">
-        <thead class="table-primary">
-            <tr class="text-center">
-                <th>Cliente</th>
-                <th>Instructor</th>
-                <th>Vehículo</th>
-                <th>Fecha</th>
-                <th>Estado</th>
-                <th>Calificación</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (sesiones != null && sesiones.Rows.Count > 0)
-            {
-                foreach (System.Data.DataRow row in sesiones.Rows)
-                {
-                    <tr class="text-center">
-                        <td>@row["Cliente"]</td>
-                        <td>@row["Instructor"]</td>
-                        <td>@row["Vehiculo"]</td>
-                        <td>@row["FechaSesion"]</td>
-                        <td>
-                            @if (row["Estado"].ToString().Contains("Cancelada"))
-                            {
-                                <span class="badge bg-danger">@row["Estado"]</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-success">@row["Estado"]</span>
-                            }
-                        </td>
-                        <td>@row["Calificacion"]</td>
-                        <td>
-                            <button class="btn btn-sm btn-primary me-1 btn-editar-sesion" data-id="@row["IdSesionPractica"]">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger btn-eliminar-sesion" data-id="@row["IdSesionPractica"]">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                }
-            }
-            else
-            {
-                <tr><td colspan="7" class="text-center text-muted">No hay sesiones registradas.</td></tr>
-            }
-        </tbody>
-    </table>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3><i class="bi bi-calendar2-week"></i> Sesiones Prácticas</h3>
+    <button class="btn btn-success" onclick="abrirModalCrearSesion()">
+        <i class="bi bi-plus-circle"></i> Nueva Sesión
+    </button>
 </div>
 
-<!-- ✅ MODAL PRINCIPAL -->
-<div class="modal fade" id="modalSesion" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+<table id="tablaSesiones" class="table table-striped table-bordered align-middle">
+    <thead class="table-dark text-center">
+        <tr>
+            <th>Cliente</th>
+            <th>Instructor</th>
+            <th>Vehículo</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (System.Data.DataRow row in sesiones.Rows)
+        {
+            <tr class="text-center">
+                <td>@row["Cliente"]</td>
+                <td>@row["Instructor"]</td>
+                <td>@row["Vehiculo"]</td>
+                <td>@row["FechaSesion"]</td>
+                <td>@Html.Raw(row["Estado"])</td>
+                <td>
+                    <button class="btn btn-warning btn-sm me-1" onclick="abrirModalEditar(@row["IdSesionPractica"])">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="abrirModalEliminar(@row["IdSesionPractica"])">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- 🧩 Modal genérico -->
+<div class="modal fade" id="modalSesion" tabindex="-1">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="tituloModal"></h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <h5 id="tituloModal" class="modal-title"></h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" id="contenidoModal">
-                <!-- Contenido AJAX -->
-            </div>
+            <div class="modal-body" id="contenidoModal"></div>
         </div>
     </div>
 </div>
+
 @section Scripts {
     <script src="~/js/sesionPractica.js"></script>
 }

@@ -1,104 +1,44 @@
 @model LiberiaDriveMVC.Models.Vehiculo
-@{
-    Layout = null;
-}
 
-<h5 class="fw-bold text-warning mb-3">
-    <i class="bi bi-pencil-square"></i> Editar Vehículo
-</h5>
-<hr />
-
-<form id="formEditarVehiculo" method="post">
+<form id="formEditarVehiculo">
     <input type="hidden" asp-for="IdVehiculo" />
 
-    <!-- 🔹 Marca -->
     <div class="mb-3">
-        <label asp-for="Marca" class="form-label">Marca</label>
-        <input asp-for="Marca" class="form-control" placeholder="Ej: Toyota" required />
+        <label class="form-label">Marca</label>
+        <input asp-for="Marca" class="form-control" placeholder="Ej: Toyota" />
         <span asp-validation-for="Marca" class="text-danger"></span>
     </div>
 
-    <!-- 🔹 Modelo -->
     <div class="mb-3">
-        <label asp-for="Modelo" class="form-label">Modelo</label>
-        <input asp-for="Modelo" class="form-control" placeholder="Ej: Corolla" required />
-        <span asp-validation-for="Modelo" class="text-danger"></span>
+        <label class="form-label">Modelo</label>
+        <input asp-for="Modelo" class="form-control" placeholder="Ej: Corolla" />
     </div>
 
-    <!-- 🔹 Placa -->
     <div class="mb-3">
-        <label asp-for="Placa" class="form-label">Placa</label>
-        <input asp-for="Placa" class="form-control text-uppercase" placeholder="Ej: ABC123" required maxlength="10" />
-        <span asp-validation-for="Placa" class="text-danger"></span>
+        <label class="form-label">Transmisión</label>
+        <select asp-for="Transmision" class="form-select">
+            <option value="Manual" selected="@Model.Transmision == "Manual"">Manual</option>
+            <option value="Automática" selected="@Model.Transmision == "Automática"">Automática</option>
+        </select>
     </div>
 
-    <!-- 🔹 Transmisión -->
     <div class="mb-3">
-    <label asp-for="Transmision" class="form-label">Transmisión</label>
-    <select asp-for="Transmision" class="form-select" required>
-        <option value="">-- Seleccione tipo de transmisión --</option>
-        <option value="Automática">Automática</option>
-        <option value="Manual">Manual</option>
-    </select>
-    <span asp-validation-for="Transmision" class="text-danger"></span>
-</div>
-
-
-    <!-- 🔹 Estado -->
-    <div class="form-check mb-3">
-        <input type="checkbox" name="Estado" class="form-check-input" value="true"
-               @(Model.Estado ? "checked" : "") />
-        <input type="hidden" name="Estado" value="false" />
-        <label class="form-check-label">Activo</label>
+        <label class="form-label">Placa</label>
+        <input asp-for="Placa" class="form-control" placeholder="Ej: ABC123" />
     </div>
 
-    <!-- 🔹 Botones -->
+    <div class="mb-3">
+        <label class="form-label">Estado</label>
+        <select asp-for="Estado" class="form-select">
+            <option value="Disponible" selected="@Model.Estado == "Disponible"">Disponible</option>
+            <option value="En uso" selected="@Model.Estado == "En uso"">En uso</option>
+            <option value="En mantenimiento" selected="@Model.Estado == "En mantenimiento"">En mantenimiento</option>
+        </select>
+    </div>
+
     <div class="text-end">
-        <button type="submit" class="btn btn-warning px-4 text-white">
-            <i class="bi bi-save"></i> Actualizar
-        </button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-            <i class="bi bi-x-circle"></i> Cancelar
+        <button type="submit" class="btn btn-warning">
+            <i class="fa fa-save"></i> Actualizar
         </button>
     </div>
 </form>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        // ✅ Envío del formulario con AJAX + SweetAlert
-        $(document).off("submit", "#formEditarVehiculo").on("submit", "#formEditarVehiculo", function (e) {
-            e.preventDefault();
-            $.ajax({
-                url: "/Vehiculos/Edit",
-                type: "POST",
-                data: $(this).serialize(),
-                success: function (resp) {
-                    if (resp.success) {
-                        Swal.fire({
-                            icon: "success",
-                            title: "Vehículo actualizado",
-                            text: "Los cambios fueron guardados correctamente.",
-                            timer: 1800,
-                            showConfirmButton: false
-                        });
-                        $("#modalVehiculo").modal("hide");
-                        setTimeout(() => location.reload(), 1500);
-                    } else {
-                        Swal.fire("Error", resp.message, "error");
-                    }
-                },
-                error: function () {
-                    Swal.fire("Error", "No se pudo actualizar el vehículo.", "error");
-                }
-            });
-        });
-
-        // 🔹 Auto-mayúsculas para Placa
-        $('input[name="Placa"]').on('input', function () {
-            this.value = this.value.toUpperCase();
-        });
-    </script>
-}

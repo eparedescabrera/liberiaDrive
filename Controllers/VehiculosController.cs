@@ -1,146 +1,55 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using LiberiaDriveMVC.Models;
 using LiberiaDriveMVC.Services;
+using System;
+using System.Collections.Generic;
 using System.Data;
+using Microsoft.Data.SqlClient;
+using System.Linq;
 
 namespace LiberiaDriveMVC.Controllers
 {
-    [Authorize]
     public class VehiculosController : Controller
     {
         private readonly DatabaseService _db;
+
         public VehiculosController(DatabaseService db)
         {
             _db = db;
         }
 
-        // ======================
-        // LISTAR
-        // ======================
-       public IActionResult Index(string searchPlaca = "")
-{
-    var parametros = new Dictionary<string, object>();
-
-    if (!string.IsNullOrWhiteSpace(searchPlaca))
-        parametros.Add("@Placa", searchPlaca.Trim());
-
-    var vehiculos = _db.EjecutarSPDataTable(
-        string.IsNullOrWhiteSpace(searchPlaca)
-        ? "sp_ListarVehiculos"
-        : "sp_BuscarVehiculosPorPlaca",
-        parametros.Count > 0 ? parametros : null
-    );
-
-    ViewBag.SearchPlaca = searchPlaca;
-    ViewBag.Vehiculos = vehiculos;
-
-    return View();
-}
-
-
-        // ======================
-        // CREAR (GET)
-        // ======================
-        [Authorize(Roles = "Administrador")]
-        
-        public IActionResult Create()
+        // =====================================================
+        // ✅ INDEX - LISTAR TODOS LOS VEHÍCULOS
+        // =====================================================
+        public IActionResult Index()
         {
-            var vehiculo = new Vehiculo { Estado = true };
-            return PartialView("_CreatePartial", vehiculo);
+            var dt = _db.EjecutarSPDataTable("sp_ListarVehiculos");
+            ViewBag.Vehiculos = dt;
+            return View();
         }
 
-        // ======================
-        // CREAR (POST)
-        // ======================
-        [HttpPost]
-[Authorize(Roles = "Administrador")]
-public IActionResult Create([FromForm] Vehiculo model)
+        // =====================================================
+        // 🔍 BUSCAR VEHÍCULO POR PLACA (AJAX)
+        // =====================================================
+        [HttpGet]
+        public IActionResult BuscarPorPlaca(string placa)
         {
-    // Verificar si existe una placa igual
-var placaParams = new Dictionary<string, object> { { "@Placa", model.Placa.Trim() } };
-var existePlaca = _db.EjecutarSPDataTable("SELECT 1 FROM Vehiculo WHERE Placa = @Placa", placaParams, true);
-
-if (existePlaca.Rows.Count > 0)
-{
-    return Json(new
-    {
-        success = false,
-        message = "⚠️ Ya existe un vehículo registrado con esa placa."
-    });
-}
-
-    try
-    {
-        if (!ModelState.IsValid)
-            return Json(new { success = false, message = "Datos inválidos en el formulario." });
-
-        var parametros = new Dictionary<string, object>
-        {
-            { "@Marca", model.Marca.Trim() },
-            { "@Modelo", model.Modelo.Trim() },
-            { "@Transmision", model.Transmision.Trim() },
-            { "@Estado", model.Estado },
-            { "@Placa", model.Placa.Trim() }
-        };
-
-        _db.EjecutarSPNonQuery("sp_InsertarVehiculo", parametros);
-
-        return Json(new { success = true, message = "Vehículo guardado correctamente." });
-    }
-    catch (Exception ex)
-    {
-        return Json(new { success = false, message = ex.Message });
-    }
-}
-
-
-        // ======================
-        // EDITAR (GET)
-        // ======================
-        [Authorize(Roles = "Administrador")]
-        public IActionResult Edit(int id)
-        {
-            var dt = _db.EjecutarSPDataTable("sp_ListarVehiculos", null);
-            var row = dt.AsEnumerable().FirstOrDefault(r => Convert.ToInt32(r["IdVehiculo"]) == id);
-
-            if (row == null)
-                return Content("❌ Vehículo no encontrado.", "text/html");
-
-            var vehiculo = new Vehiculo
-            {
-                IdVehiculo = (int)row["IdVehiculo"],
-                Marca = row["Marca"].ToString()!,
-                Modelo = row["Modelo"].ToString()!,
-                Transmision = row["Transmision"].ToString()!,
-                Estado = Convert.ToBoolean(row["Estado"]),
-                Placa = row["Placa"].ToString()!
-            };
-
-            return PartialView("_EditPartial", vehiculo);
-        }
-
-        // ======================
-        // EDITAR (POST)
-        // ======================
-        [HttpPost]
-        [Authorize(Roles = "Administrador")]
-        public IActionResult Edit([FromForm] Vehiculo model)
-        {
-            var parametros = new Dictionary<string, object>
-            {
-                { "@IdVehiculo", model.IdVehiculo },
-                { "@Marca", model.Marca },
-                { "@Modelo", model.Modelo },
-                { "@Transmision", model.Transmision },
-                { "@Estado", model.Estado },
-                { "@Placa", model.Placa }
-            };
-
             try
             {
-                _db.EjecutarSPNonQuery("sp_ActualizarVehiculo", parametros);
-                return Json(new { success = true });
+                var parametros = new Dictionary<string, object> { { "@Placa", placa ?? "" } };
+                var dt = _db.EjecutarSPDataTable("sp_BuscarVehiculoPorPlaca", parametros);
+
+                var resultados = dt.AsEnumerable().Select(r => new
+                {
+                    IdVehiculo = r["IdVehiculo"],
+                    Marca = r["Marca"].ToString(),
+                    Modelo = r["Modelo"].ToString(),
+                    Transmision = r["Transmision"].ToString(),
+                    Placa = r["Placa"].ToString(),
+                    Estado = r["Estado"].ToString()
+                });
+
+                return Json(new { success = true, data = resultados });
             }
             catch (Exception ex)
             {
@@ -148,66 +57,195 @@ if (existePlaca.Rows.Count > 0)
             }
         }
 
-        // ======================
-        // DETALLES
-        // ======================
-        public IActionResult Details(int id)
-        {
-            var dt = _db.EjecutarSPDataTable("sp_ListarVehiculos", null);
-            var row = dt.AsEnumerable().FirstOrDefault(r => Convert.ToInt32(r["IdVehiculo"]) == id);
-
-            if (row == null)
-                return Content("❌ Vehículo no encontrado.", "text/html");
-
-            var vehiculo = new Vehiculo
-            {
-                IdVehiculo = (int)row["IdVehiculo"],
-                Marca = row["Marca"].ToString()!,
-                Modelo = row["Modelo"].ToString()!,
-                Transmision = row["Transmision"].ToString()!,
-                Estado = Convert.ToBoolean(row["Estado"]),
-                Placa = row["Placa"].ToString()!
-            };
-
-            return PartialView("_DetailsPartial", vehiculo);
-        }
-        
-
-        // ======================
-        // ELIMINAR
-        // ======================
+        // =====================================================
+        // ✅ CREAR - GET
+        // =====================================================
         [HttpGet]
-        [Authorize(Roles = "Administrador")]
+        public IActionResult Create()
+        {
+            return PartialView("_CreatePartial", new Vehiculo { Estado = "Disponible" });
+        }
+
+        // =====================================================
+        // ✅ CREAR - POST
+        // =====================================================
+        [HttpPost]
+        public IActionResult Create(Vehiculo model)
+        {
+            try
+            {
+                var parametros = new Dictionary<string, object>
+                {
+                    { "@Marca", model.Marca },
+                    { "@Modelo", model.Modelo },
+                    { "@Transmision", model.Transmision },
+                    { "@Placa", model.Placa },
+                    { "@Estado", model.Estado ?? "Disponible" }
+                };
+
+                _db.EjecutarSPNonQuery("sp_InsertarVehiculo", parametros);
+                return Json(new { success = true });
+            }
+            catch (SqlException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error general: " + ex.Message });
+            }
+        }
+
+        // =====================================================
+        // ✅ EDITAR - GET
+        // =====================================================
+        [HttpGet]
+        public IActionResult Edit(int id)
+        {
+            try
+            {
+                var parametros = new Dictionary<string, object> { { "@IdVehiculo", id } };
+                var dt = _db.EjecutarSPDataTable("sp_ObtenerVehiculoPorId", parametros);
+
+                if (dt.Rows.Count == 0)
+                    return Content("No se encontró el vehículo solicitado.");
+
+                var row = dt.Rows[0];
+                var model = new Vehiculo
+                {
+                    IdVehiculo = Convert.ToInt32(row["IdVehiculo"]),
+                    Marca = row["Marca"].ToString(),
+                    Modelo = row["Modelo"].ToString(),
+                    Transmision = row["Transmision"].ToString(),
+                    Placa = row["Placa"].ToString(),
+                    Estado = row["Estado"].ToString()
+                };
+
+                return PartialView("_EditPartial", model);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error al cargar datos: " + ex.Message);
+            }
+        }
+
+        // =====================================================
+        // ✅ EDITAR - POST
+        // =====================================================
+        [HttpPost]
+        public IActionResult Edit(Vehiculo model)
+        {
+            try
+            {
+                var parametros = new Dictionary<string, object>
+                {
+                    { "@IdVehiculo", model.IdVehiculo },
+                    { "@Marca", model.Marca },
+                    { "@Modelo", model.Modelo },
+                    { "@Transmision", model.Transmision },
+                    { "@Placa", model.Placa },
+                    { "@Estado", model.Estado }
+                };
+
+                _db.EjecutarSPNonQuery("sp_ActualizarVehiculo", parametros);
+                return Json(new { success = true });
+            }
+            catch (SqlException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error general: " + ex.Message });
+            }
+        }
+
+        // =====================================================
+        // ✅ ELIMINAR - GET
+        // =====================================================
+        [HttpGet]
         public IActionResult Delete(int id)
         {
-            var dt = _db.EjecutarSPDataTable("sp_ListarVehiculos", null);
-            var row = dt.AsEnumerable().FirstOrDefault(r => Convert.ToInt32(r["IdVehiculo"]) == id);
-
-            if (row == null)
-                return Content("❌ Vehículo no encontrado.", "text/html");
-
-            var vehiculo = new Vehiculo
+            try
             {
-                IdVehiculo = (int)row["IdVehiculo"],
-                Marca = row["Marca"].ToString()!,
-                Modelo = row["Modelo"].ToString()!,
-                Transmision = row["Transmision"].ToString()!,
-                Estado = Convert.ToBoolean(row["Estado"]),
-                Placa = row["Placa"].ToString()!
-            };
+                var parametros = new Dictionary<string, object> { { "@IdVehiculo", id } };
+                var dt = _db.EjecutarSPDataTable("sp_ObtenerVehiculoPorId", parametros);
 
-            return PartialView("_DeletePartial", vehiculo);
+                if (dt.Rows.Count == 0)
+                    return Content("No se encontró el vehículo.");
+
+                var row = dt.Rows[0];
+                var model = new Vehiculo
+                {
+                    IdVehiculo = Convert.ToInt32(row["IdVehiculo"]),
+                    Marca = row["Marca"].ToString(),
+                    Modelo = row["Modelo"].ToString(),
+                    Transmision = row["Transmision"].ToString(),
+                    Placa = row["Placa"].ToString(),
+                    Estado = row["Estado"].ToString()
+                };
+
+                return PartialView("_DeletePartial", model);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error al cargar vehículo: " + ex.Message);
+            }
         }
+// =====================================================
+// ✅ DETALLES - GET
+// =====================================================
+[HttpGet]
+public IActionResult Details(int id)
+{
+    try
+    {
+        var parametros = new Dictionary<string, object> { { "@IdVehiculo", id } };
+        var dt = _db.EjecutarSPDataTable("sp_ObtenerVehiculoPorId", parametros);
 
-        [HttpPost]
-        [Authorize(Roles = "Administrador")]
-        public IActionResult DeleteConfirmed(int IdVehiculo)
+        if (dt.Rows.Count == 0)
+            return Content("No se encontró el vehículo solicitado.");
+
+        var row = dt.Rows[0];
+        var model = new Vehiculo
         {
-            var parametros = new Dictionary<string, object> { { "@IdVehiculo", IdVehiculo } };
+            IdVehiculo = Convert.ToInt32(row["IdVehiculo"]),
+            Marca = row["Marca"].ToString(),
+            Modelo = row["Modelo"].ToString(),
+            Transmision = row["Transmision"].ToString(),
+            Placa = row["Placa"].ToString(),
+            Estado = row["Estado"].ToString()
+        };
 
-            _db.EjecutarSPNonQuery("sp_EliminarVehiculo", parametros);
-            return Json(new { success = true });
+        return PartialView("_DetailsPartial", model);
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, "Error al cargar detalles: " + ex.Message);
+    }
+}
+
+        // =====================================================
+        // ✅ ELIMINAR - POST (AJAX con SweetAlert)
+        // =====================================================
+        [HttpPost]
+        public IActionResult DeleteConfirmed(int id)
+        {
+            try
+            {
+                var parametros = new Dictionary<string, object> { { "@IdVehiculo", id } };
+                _db.EjecutarSPNonQuery("sp_EliminarVehiculo", parametros);
+
+                return Json(new { success = true });
+            }
+            catch (SqlException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error general: " + ex.Message });
+            }
         }
-        
     }
 }

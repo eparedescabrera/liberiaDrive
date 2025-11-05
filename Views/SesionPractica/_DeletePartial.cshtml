@@ -1,0 +1,23 @@
+@model LiberiaDriveMVC.Models.SesionPractica
+@{
+    Layout = null;
+}
+<div class="p-3">
+    <form id="formEliminarSesion">
+        <input type="hidden" name="IdSesionPractica" value="@Model.IdSesionPractica" />
+
+        <div class="alert alert-warning">
+            <h5 class="text-danger"><i class="bi bi-exclamation-triangle"></i> Confirmar eliminación</h5>
+            <p>¿Desea eliminar la sesión de <strong>@Model.IdClienteNavigation?.Nombre</strong> 
+               con el instructor <strong>@Model.IdInstructorNavigation?.Nombre</strong> 
+               programada el <strong>@Model.FechaSesion.ToString("dd/MM/yyyy")</strong>?</p>
+        </div>
+
+        <div class="text-end">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash"></i> Eliminar
+            </button>
+        </div>
+    </form>
+</div>

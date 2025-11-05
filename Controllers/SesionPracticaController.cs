@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using LiberiaDriveMVC.Models;
 using LiberiaDriveMVC.Services;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using Microsoft.Data.SqlClient;
+using System.Linq;
 
 namespace LiberiaDriveMVC.Controllers
 {
@@ -17,7 +19,7 @@ namespace LiberiaDriveMVC.Controllers
         }
 
         // =====================================================
-        // ✅ INDEX (LISTAR)
+        // ✅ INDEX - LISTAR TODAS LAS SESIONES
         // =====================================================
         public IActionResult Index()
         {
@@ -27,30 +29,33 @@ namespace LiberiaDriveMVC.Controllers
         }
 
         // =====================================================
-        // ✅ CREATE (GET)
+        // ✅ CREAR - GET
         // =====================================================
         [HttpGet]
         public IActionResult Create()
         {
-            return PartialView("_CreatePartial", new Models.SesionPractica());
+            return PartialView("_CreatePartial", new SesionPractica
+            {
+                FechaSesion = DateOnly.FromDateTime(DateTime.Today),
+                Estado = "Programada"
+            });
         }
 
         // =====================================================
-        // ✅ CREATE (POST)
+        // ✅ CREAR - POST
         // =====================================================
         [HttpPost]
-        public JsonResult Create(Models.SesionPractica model)
+        public IActionResult Create(SesionPractica model)
         {
             try
             {
                 var parametros = new Dictionary<string, object>
                 {
-                    {"@IdCliente", model.IdCliente},
-                    {"@IdInstructor", model.IdInstructor},
-                    {"@IdVehiculo", model.IdVehiculo},
-                    {"@FechaSesion", model.FechaSesion},
-                    {"@Estado", model.Estado ?? "Programada"},
-                    {"@Calificacion", model.Calificacion ?? 0}
+                    { "@IdCliente", model.IdCliente },
+                    { "@IdInstructor", model.IdInstructor },
+                    { "@IdVehiculo", model.IdVehiculo },
+                    { "@FechaSesion", model.FechaSesion.ToDateTime(TimeOnly.MinValue) },
+                    { "@Estado", model.Estado ?? "Programada" }
                 };
 
                 _db.EjecutarSPNonQuery("sp_InsertarSesionPractica", parametros);
@@ -62,54 +67,62 @@ namespace LiberiaDriveMVC.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error interno: " + ex.Message });
+                return Json(new { success = false, message = "Error general: " + ex.Message });
             }
         }
 
         // =====================================================
-        // ✅ EDIT (GET)
+        // ✅ EDITAR - GET
         // =====================================================
         [HttpGet]
         public IActionResult Edit(int id)
         {
-            var parametros = new Dictionary<string, object> { { "@IdSesionPractica", id } };
-            var dt = _db.EjecutarQuery($"SELECT * FROM SesionPractica WHERE IdSesionPractica = {id}", null);
-
-            if (dt.Rows.Count == 0)
-                return NotFound();
-
-            var row = dt.Rows[0];
-            var model = new Models.SesionPractica
+            try
             {
-                IdSesionPractica = Convert.ToInt32(row["IdSesionPractica"]),
-                IdCliente = Convert.ToInt32(row["IdCliente"]),
-                IdInstructor = Convert.ToInt32(row["IdInstructor"]),
-                IdVehiculo = Convert.ToInt32(row["IdVehiculo"]),
-                FechaSesion = DateOnly.FromDateTime(Convert.ToDateTime(row["FechaSesion"])),
-                Estado = row["Estado"].ToString(),
-                Calificacion = row["Calificacion"] != DBNull.Value ? Convert.ToDecimal(row["Calificacion"]) : null
-            };
+                var parametros = new Dictionary<string, object> { { "@IdSesionPractica", id } };
+                var dt = _db.EjecutarSPDataTable("sp_ObtenerSesionPracticaPorId", parametros);
 
-            return PartialView("_EditPartial", model);
+                if (dt.Rows.Count == 0)
+                    return Content("No se encontró la sesión práctica.");
+
+                var row = dt.Rows[0];
+                var model = new SesionPractica
+                {
+                    IdSesionPractica = Convert.ToInt32(row["IdSesionPractica"]),
+                    IdCliente = Convert.ToInt32(row["IdCliente"]),
+                    IdInstructor = Convert.ToInt32(row["IdInstructor"]),
+                    IdVehiculo = Convert.ToInt32(row["IdVehiculo"]),
+                    FechaSesion = DateOnly.FromDateTime(Convert.ToDateTime(row["FechaSesion"])),
+                    Estado = row["Estado"].ToString(),
+                    IdClienteNavigation = new Cliente { Nombre = row["NombreCliente"].ToString() },
+                    IdInstructorNavigation = new Instructor { Nombre = row["NombreInstructor"].ToString() },
+                    IdVehiculoNavigation = new Vehiculo { Marca = row["MarcaVehiculo"].ToString() }
+                };
+
+                return PartialView("_EditPartial", model);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         // =====================================================
-        // ✅ EDIT (POST)
+        // ✅ EDITAR - POST
         // =====================================================
         [HttpPost]
-        public JsonResult Edit(Models.SesionPractica model)
+        public IActionResult Edit(SesionPractica model)
         {
             try
             {
                 var parametros = new Dictionary<string, object>
                 {
-                    {"@IdSesionPractica", model.IdSesionPractica},
-                    {"@IdCliente", model.IdCliente},
-                    {"@IdInstructor", model.IdInstructor},
-                    {"@IdVehiculo", model.IdVehiculo},
-                    {"@FechaSesion", model.FechaSesion},
-                    {"@Estado", model.Estado},
-                    {"@Calificacion", model.Calificacion ?? 0}
+                    { "@IdSesionPractica", model.IdSesionPractica },
+                    { "@IdCliente", model.IdCliente },
+                    { "@IdInstructor", model.IdInstructor },
+                    { "@IdVehiculo", model.IdVehiculo },
+                    { "@FechaSesion", model.FechaSesion.ToDateTime(TimeOnly.MinValue) },
+                    { "@Estado", model.Estado ?? "Programada" }
                 };
 
                 _db.EjecutarSPNonQuery("sp_ActualizarSesionPractica", parametros);
@@ -121,33 +134,51 @@ namespace LiberiaDriveMVC.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error interno: " + ex.Message });
+                return Json(new { success = false, message = "Error general: " + ex.Message });
             }
         }
 
         // =====================================================
-        // ✅ DELETE (GET)
+        // ✅ ELIMINAR - GET
         // =====================================================
         [HttpGet]
         public IActionResult Delete(int id)
         {
-            var dt = _db.EjecutarQuery($"SELECT * FROM SesionPractica WHERE IdSesionPractica = {id}", null);
-            if (dt.Rows.Count == 0)
-                return NotFound();
-
-            var model = new Models.SesionPractica
+            try
             {
-                IdSesionPractica = Convert.ToInt32(dt.Rows[0]["IdSesionPractica"])
-            };
+                var parametros = new Dictionary<string, object> { { "@IdSesionPractica", id } };
+                var dt = _db.EjecutarSPDataTable("sp_ObtenerSesionPracticaPorId", parametros);
 
-            return PartialView("_DeletePartial", model);
+                if (dt.Rows.Count == 0)
+                    return Content("No se encontró la sesión práctica.");
+
+                var row = dt.Rows[0];
+                var model = new SesionPractica
+                {
+                    IdSesionPractica = Convert.ToInt32(row["IdSesionPractica"]),
+                    IdCliente = Convert.ToInt32(row["IdCliente"]),
+                    IdInstructor = Convert.ToInt32(row["IdInstructor"]),
+                    IdVehiculo = Convert.ToInt32(row["IdVehiculo"]),
+                    FechaSesion = DateOnly.FromDateTime(Convert.ToDateTime(row["FechaSesion"])),
+                    Estado = row["Estado"].ToString(),
+                    IdClienteNavigation = new Cliente { Nombre = row["NombreCliente"].ToString() },
+                    IdInstructorNavigation = new Instructor { Nombre = row["NombreInstructor"].ToString() },
+                    IdVehiculoNavigation = new Vehiculo { Marca = row["MarcaVehiculo"].ToString() }
+                };
+
+                return PartialView("_DeletePartial", model);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al cargar datos: {ex.Message}");
+            }
         }
 
         // =====================================================
-        // ✅ DELETE (POST)
+        // ✅ ELIMINAR - POST
         // =====================================================
         [HttpPost]
-        public JsonResult DeleteConfirmed(int id)
+        public IActionResult DeleteConfirmed(int id)
         {
             try
             {
@@ -155,28 +186,83 @@ namespace LiberiaDriveMVC.Controllers
                 _db.EjecutarSPNonQuery("sp_EliminarSesionPractica", parametros);
                 return Json(new { success = true });
             }
-            catch (SqlException ex)
+            catch (Exception ex)
             {
                 return Json(new { success = false, message = ex.Message });
             }
         }
 
         // =====================================================
-        // ✅ BUSCAR INSTRUCTORES ACTIVOS (para Select2)
+        // 🔍 BUSCAR CLIENTES (AJAX)
         // =====================================================
         [HttpGet]
-        public JsonResult BuscarInstructores(string term)
+        public IActionResult BuscarClientes(string term)
         {
-            var parametros = new Dictionary<string, object> { { "@term", term } };
-            var dt = _db.EjecutarSPDataTable("sp_BuscarInstructoresActivos", parametros);
+            var parametros = new Dictionary<string, object> { { "@Texto", term ?? "" } };
+            var dt = _db.EjecutarSPDataTable("sp_BuscarClientes", parametros);
 
-            var lista = new List<object>();
-            foreach (DataRow row in dt.Rows)
+            var resultados = dt.AsEnumerable().Select(r => new
             {
-                lista.Add(new { id = row["id"], text = row["text"].ToString() });
-            }
+                id = r["IdCliente"],
+                text = r["NombreCompleto"].ToString()
+            });
 
-            return Json(lista);
+            return Json(resultados);
         }
+[HttpGet]
+public IActionResult BuscarInstructores(string term)
+{
+    var parametros = new Dictionary<string, object> { { "@term", term ?? "" } };
+    var dt = _db.EjecutarSPDataTable("sp_BuscarInstructoresActivos", parametros);
+
+    var resultados = dt.AsEnumerable().Select(r => new
+    {
+        id = r["id"],
+        text = r["text"].ToString()
+    });
+
+    return Json(resultados);
+}
+
+        // =====================================================
+        // 🔍 BUSCAR INSTRUCTORES ACTIVOS (AJAX)
+        // =====================================================
+       [HttpGet]
+public IActionResult BuscarInstructoresActivos(string term)
+{
+    var parametros = new Dictionary<string, object> { { "@term", term ?? "" } };
+    var dt = _db.EjecutarSPDataTable("sp_BuscarInstructoresActivos", parametros);
+
+    var resultados = dt.AsEnumerable().Select(r => new
+    {
+        id = r["id"],
+        text = r["text"].ToString()
+    });
+
+    return Json(resultados);
+}
+
+        // =====================================================
+        // 🔍 BUSCAR VEHÍCULOS (AJAX)
+        // =====================================================
+// =====================================================
+// 🔍 BUSCAR VEHÍCULOS DISPONIBLES (solo los que pueden usarse)
+// =====================================================
+[HttpGet]
+public IActionResult BuscarVehiculos(string term)
+{
+    var parametros = new Dictionary<string, object> { { "@term", term ?? "" } };
+    var dt = _db.EjecutarSPDataTable("sp_BuscarVehiculosDisponibles", parametros);
+
+    var resultados = dt.AsEnumerable().Select(r => new
+    {
+        id = r["id"],
+        text = r["text"].ToString()
+    });
+
+    return Json(resultados);
+}
+
+
     }
 }

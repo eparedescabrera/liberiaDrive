@@ -1,0 +1,51 @@
+@model LiberiaDriveMVC.Models.SesionPractica
+
+<div class="p-3">
+    <form id="formCrearSesion" autocomplete="off">
+
+        <!-- ✅ CLIENTE -->
+        <div class="form-group mb-3">
+            <label><strong>Cliente:</strong></label>
+            <select id="IdCliente" name="IdCliente" class="form-control select2" style="width:100%;" required></select>
+        </div>
+
+        <!-- ✅ INSTRUCTOR -->
+        <div class="form-group mb-3">
+            <label><strong>Instructor :</strong></label>
+            <select id="IdInstructor" name="IdInstructor" class="form-control select2" style="width:100%;" required></select>
+        </div>
+
+        <!-- ✅ VEHÍCULO -->
+        <div class="form-group mb-3">
+            <label><strong>Vehículo Disponible:</strong></label>
+            <select id="IdVehiculo" name="IdVehiculo" class="form-control select2" style="width:100%;" required></select>
+        </div>
+
+        <!-- ✅ FECHA DE LA SESIÓN -->
+        <div class="form-group mb-3">
+            <label><strong>Fecha de la Sesión:</strong></label>
+            <input asp-for="FechaSesion"
+                   id="FechaSesion"
+                   name="FechaSesion"
+                   class="form-control calendario"
+                   placeholder="Seleccione una fecha"
+                   required />
+        </div>
+
+        <!-- ✅ ESTADO -->
+        <div class="form-group mb-3">
+            <label><strong>Estado:</strong></label>
+            <select id="Estado" name="Estado" class="form-select" required>
+                <option value="Programada" selected>Programada</option>
+                <option value="Cancelada">Cancelada</option>
+            </select>
+        </div>
+
+        <!-- ✅ BOTÓN GUARDAR -->
+        <div class="text-end mt-3">
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-check-circle"></i> Registrar Sesión
+            </button>
+        </div>
+    </form>
+</div>

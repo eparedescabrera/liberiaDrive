@@ -1,0 +1,64 @@
+@model LiberiaDriveMVC.Models.HorarioInstructor
+
+<div class="p-3">
+    <form id="formEditarHorario">
+        <input type="hidden" name="IdHorario" value="@Model.IdHorario" />
+
+        <!-- ✅ INSTRUCTOR -->
+        <div class="form-group mb-3">
+            <label><strong>Instructor:</strong></label>
+            <select id="IdInstructor" name="IdInstructor" class="form-control select2" style="width:100%;" required>
+                <option value="@Model.IdInstructor" selected>
+                    @(Model.IdInstructorNavigation?.Nombre ?? "Instructor actual")
+                </option>
+            </select>
+        </div>
+
+        <!-- ✅ DÍA DE LA SEMANA -->
+        <div class="form-group mb-3">
+            <label><strong>Día de la Semana:</strong></label>
+            <select name="DiaSemana" class="form-select" required>
+                <option value="">Seleccione...</option>
+
+                @foreach (var dia in new[] { "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado" })
+                {
+                    if (Model.DiaSemana == dia)
+                    {
+                        <option value="@dia" selected="selected">@dia</option>
+                    }
+                    else
+                    {
+                        <option value="@dia">@dia</option>
+                    }
+                }
+            </select>
+        </div>
+
+        <!-- ✅ HORAS -->
+        <div class="form-group mb-3">
+            <label><strong>Hora de Inicio:</strong></label>
+            <input type="time" class="form-control" name="HoraInicio"
+                   value="@Model.HoraInicio.ToString(@"hh\:mm")" required />
+        </div>
+
+        <div class="form-group mb-3">
+            <label><strong>Hora de Fin:</strong></label>
+            <input type="time" class="form-control" name="HoraFin"
+                   value="@Model.HoraFin.ToString(@"hh\:mm")" required />
+        </div>
+
+        <!-- ✅ DISPONIBILIDAD -->
+        <div class="form-check mb-3">
+            <input type="checkbox" class="form-check-input" id="Disponible" name="Disponible" value="true"
+                   @(Model.Disponible ? "checked" : "") />
+            <label class="form-check-label" for="Disponible">Disponible</label>
+        </div>
+
+        <!-- ✅ BOTÓN -->
+        <div class="text-end">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> Guardar Cambios
+            </button>
+        </div>
+    </form>
+</div>

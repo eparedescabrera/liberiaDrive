@@ -1,0 +1,48 @@
+@model LiberiaDriveMVC.Models.MantenimientoVehiculo
+
+<div class="p-3">
+    <form id="formCrearMantenimiento" autocomplete="off">
+
+        <!-- ✅ VEHÍCULO -->
+        <div class="form-group mb-3">
+            <label><strong>Vehículo:</strong></label>
+            <select id="IdVehiculo" name="IdVehiculo" class="form-control select2" style="width:100%;" required></select>
+        </div>
+
+        <!-- ✅ FECHA -->
+        <div class="form-group mb-3">
+            <label><strong>Fecha de Mantenimiento:</strong></label>
+            <input asp-for="FechaMantenimiento"
+                   id="FechaMantenimiento"
+                   name="FechaMantenimiento"
+                   class="form-control calendario"
+                   type="text"
+                   required />
+        </div>
+
+        <!-- ✅ TIPO -->
+        <div class="form-group mb-3">
+            <label><strong>Tipo de Mantenimiento:</strong></label>
+            <input asp-for="TipoMantenimiento" name="TipoMantenimiento" class="form-control" placeholder="Ej: Cambio de aceite" required />
+        </div>
+
+        <!-- ✅ COSTO -->
+        <div class="form-group mb-3">
+            <label><strong>Costo (₡):</strong></label>
+            <input asp-for="Costo" name="Costo" class="form-control" type="number" step="0.01" required />
+        </div>
+
+        <!-- ✅ DESCRIPCIÓN -->
+        <div class="form-group mb-3">
+            <label><strong>Descripción:</strong></label>
+            <textarea asp-for="Descripcion" name="Descripcion" class="form-control" rows="3" placeholder="Detalles adicionales (opcional)"></textarea>
+        </div>
+
+        <!-- ✅ BOTÓN GUARDAR -->
+        <div class="text-end mt-3">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> Guardar Mantenimiento
+            </button>
+        </div>
+    </form>
+</div>

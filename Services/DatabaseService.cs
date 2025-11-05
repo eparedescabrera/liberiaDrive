@@ -5,79 +5,99 @@ namespace LiberiaDriveMVC.Services
 {
     public class DatabaseService
     {
-        private readonly string _connectionString;
+        private readonly string _connectionStringOLTP;
+        private readonly string _connectionStringDW;
 
         public DatabaseService(IConfiguration cfg)
         {
-            _connectionString = cfg.GetConnectionString("DefaultConnection")!;
+            _connectionStringOLTP = cfg.GetConnectionString("DefaultConnection")!;
+            _connectionStringDW = cfg.GetConnectionString("DWConnection")!;
         }
 
-        // ✅ DataTable: puede ejecutar SP o SQL directo
+        // =====================================================
+        // ✅ Ejecutar SP o consulta en OLTP (LiberiaDriveDB)
+        // =====================================================
         public DataTable EjecutarSPDataTable(string queryOrSP, Dictionary<string, object>? parametros = null, bool isSql = false)
-{
-    using var cn = new SqlConnection(_connectionString);
-    using var cmd = new SqlCommand(queryOrSP, cn);
-    cmd.CommandType = isSql ? CommandType.Text : CommandType.StoredProcedure;
-
-    if (parametros != null)
-    {
-        foreach (var p in parametros)
-            cmd.Parameters.AddWithValue(p.Key, p.Value ?? DBNull.Value);
-    }
-
-    using var da = new SqlDataAdapter(cmd);
-    var dt = new DataTable();
-
-    cn.Open();
-    Console.WriteLine($"🟢 Ejecutando {queryOrSP}");
-    da.Fill(dt);
-    Console.WriteLine($"✅ Registros devueltos: {dt.Rows.Count}");
-    return dt;
-}
-
-     // =====================================================
-// ✅ MÉTODO: Ejecutar consultas SQL directas (SELECT)
-// =====================================================
-public DataTable EjecutarQuery(string query, Dictionary<string, object>? parametros = null)
-{
-    using (var conn = new SqlConnection(_connectionString))
-    {
-        using (var cmd = new SqlCommand(query, conn))
         {
-            cmd.CommandType = CommandType.Text;
-
-            if (parametros != null)
-            {
-                foreach (var p in parametros)
-                    cmd.Parameters.AddWithValue(p.Key, p.Value ?? DBNull.Value);
-            }
-
-            var dt = new DataTable();
-            using (var da = new SqlDataAdapter(cmd))
-            {
-                da.Fill(dt);
-            }
-            return dt;
-        }
-    }
-}
-   
-
-        // ✅ NonQuery: puede ejecutar SP o SQL directo (¡la nueva sobrecarga!)
-        public int EjecutarSPNonQuery(string queryOrSP, Dictionary<string, object>? parametros = null, bool isSql = false)
-        {
-            using var cn = new SqlConnection(_connectionString);
+            using var cn = new SqlConnection(_connectionStringOLTP);
             using var cmd = new SqlCommand(queryOrSP, cn);
             cmd.CommandType = isSql ? CommandType.Text : CommandType.StoredProcedure;
 
             if (parametros != null)
-            {
                 foreach (var p in parametros)
                     cmd.Parameters.AddWithValue(p.Key, p.Value ?? DBNull.Value);
-            }
+
+            using var da = new SqlDataAdapter(cmd);
+            var dt = new DataTable();
+            cn.Open();
+            da.Fill(dt);
+            return dt;
+        }
+
+        public int EjecutarSPNonQuery(string queryOrSP, Dictionary<string, object>? parametros = null, bool isSql = false)
+        {
+            using var cn = new SqlConnection(_connectionStringOLTP);
+            using var cmd = new SqlCommand(queryOrSP, cn);
+            cmd.CommandType = isSql ? CommandType.Text : CommandType.StoredProcedure;
+
+            if (parametros != null)
+                foreach (var p in parametros)
+                    cmd.Parameters.AddWithValue(p.Key, p.Value ?? DBNull.Value);
 
             cn.Open();
             return cmd.ExecuteNonQuery();
+        }
+
+        // =====================================================
+        // ✅ Consultas SQL directas (solo OLTP)
+        // =====================================================
+        public DataTable EjecutarQuery(string query, Dictionary<string, object>? parametros = null)
+        {
+            using var cn = new SqlConnection(_connectionStringOLTP);
+            using var cmd = new SqlCommand(query, cn);
+            cmd.CommandType = CommandType.Text;
+
+            if (parametros != null)
+                foreach (var p in parametros)
+                    cmd.Parameters.AddWithValue(p.Key, p.Value ?? DBNull.Value);
+
+            using var da = new SqlDataAdapter(cmd);
+            var dt = new DataTable();
+            da.Fill(dt);
+            return dt;
+        }
+
+        // =====================================================
+        // 🧩 NUEVOS MÉTODOS: conexión al DW (LiberiaDriveDW)
+        // =====================================================
+        public DataTable EjecutarSPDataTableDW(string nombreSP, Dictionary<string, object>? parametros = null)
+        {
+            using var cn = new SqlConnection(_connectionStringDW);
+            using var cmd = new SqlCommand(nombreSP, cn);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            if (parametros != null)
+                foreach (var p in parametros)
+                    cmd.Parameters.AddWithValue(p.Key, p.Value ?? DBNull.Value);
+
+            using var da = new SqlDataAdapter(cmd);
+            var dt = new DataTable();
+            da.Fill(dt);
+            return dt;
+        }
+
+        public void EjecutarSPNonQueryDW(string nombreSP, Dictionary<string, object>? parametros = null)
+        {
+            using var cn = new SqlConnection(_connectionStringDW);
+            using var cmd = new SqlCommand(nombreSP, cn);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            if (parametros != null)
+                foreach (var p in parametros)
+                    cmd.Parameters.AddWithValue(p.Key, p.Value ?? DBNull.Value);
+
+            cn.Open();
+            cmd.ExecuteNonQuery();
         }
     }
 }

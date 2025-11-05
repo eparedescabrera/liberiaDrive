@@ -1,21 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
-namespace LiberiaDriveMVC.Models;
-
-public partial class HorarioInstructor
+namespace LiberiaDriveMVC.Models
 {
-    public int IdHorario { get; set; }
+    public class HorarioInstructor
+    {
+        public int IdHorario { get; set; }
 
-    public int IdInstructor { get; set; }
+        [Required(ErrorMessage = "Debe seleccionar un instructor.")]
+        public int IdInstructor { get; set; }
 
-    public string DiaSemana { get; set; } = null!;
+        [Required(ErrorMessage = "Debe ingresar el día de la semana.")]
+        [MaxLength(15)]
+        public string DiaSemana { get; set; } = string.Empty;
 
-    public TimeOnly HoraInicio { get; set; }
+        [Required(ErrorMessage = "Debe especificar la hora de inicio.")]
+        public TimeSpan HoraInicio { get; set; }
 
-    public TimeOnly HoraFin { get; set; }
+        [Required(ErrorMessage = "Debe especificar la hora de fin.")]
+        public TimeSpan HoraFin { get; set; }
 
-    public bool? Disponible { get; set; }
+        public bool Disponible { get; set; } = true;
 
-    public virtual Instructor IdInstructorNavigation { get; set; } = null!;
+        public virtual Instructor? IdInstructorNavigation { get; set; }
+    }
 }

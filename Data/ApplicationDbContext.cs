@@ -97,6 +97,8 @@ public virtual DbSet<CursoTipo> CursoTipo { get; set; } // ✅ Agregado
         .WithMany(p => p.Cursos)
         .HasForeignKey(d => d.IdCursoTipo)
         .HasConstraintName("FK_Curso_CursoTipo");
+         entity.Property(e => e.Costo)
+          .HasColumnType("decimal(10,2)"); // ✅ hasta 99999999.99
 });
 
 
@@ -274,37 +276,49 @@ public virtual DbSet<CursoTipo> CursoTipo { get; set; } // ✅ Agregado
                 .IsUnicode(false);
         });
 
-        modelBuilder.Entity<SesionPractica>(entity =>
-        {
-            entity.HasKey(e => e.IdSesionPractica).HasName("PK__SesionPr__8FF1ECA89E45991B");
+       modelBuilder.Entity<SesionPractica>(entity =>
+{
+    entity.HasKey(e => e.IdSesionPractica)
+          .HasName("PK__SesionPractica__8FF1ECA8");
 
-            entity.ToTable(tb =>
-                {
-                    tb.HasTrigger("trg_Cliente_Estado");
-                    tb.HasTrigger("trg_Instructor_Disponibilidad");
-                    tb.HasTrigger("trg_Validar_Instructor_Disponible");
-                    tb.HasTrigger("trg_Validar_Vehiculo_SesionDuplicada");
-                    tb.HasTrigger("trg_Vehiculo_Estado");
-                });
+    // 🔹 Triggers de validación
+    entity.ToTable(tb =>
+    {
+        tb.HasTrigger("trg_Cliente_Estado");
+        tb.HasTrigger("trg_Instructor_Disponibilidad");
+        tb.HasTrigger("trg_Validar_Instructor_Disponible");
+        tb.HasTrigger("trg_Validar_Vehiculo_SesionDuplicada");
+        tb.HasTrigger("trg_Vehiculo_Estado");
+    });
 
-            entity.Property(e => e.Calificacion).HasColumnType("decimal(5, 2)");
-            entity.Property(e => e.Estado)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasDefaultValue("Programada");
+    // 🔹 Propiedades
+    entity.Property(e => e.Estado)
+        .HasMaxLength(30)
+        .IsUnicode(false)
+        .HasDefaultValue("Programada");
 
-            entity.HasOne(d => d.IdClienteNavigation).WithMany(p => p.SesionPractica)
-                .HasForeignKey(d => d.IdCliente)
-                .HasConstraintName("FK__SesionPra__IdCli__412EB0B6");
+    entity.Property(e => e.FechaSesion)
+        .HasColumnType("date");
 
-            entity.HasOne(d => d.IdInstructorNavigation).WithMany(p => p.SesionPractica)
-                .HasForeignKey(d => d.IdInstructor)
-                .HasConstraintName("FK__SesionPra__IdIns__4222D4EF");
+    // 🔹 Relaciones y constraints
+    entity.HasOne(d => d.IdClienteNavigation)
+        .WithMany(p => p.SesionPractica)
+        .HasForeignKey(d => d.IdCliente)
+        .OnDelete(DeleteBehavior.Restrict)
+        .HasConstraintName("FK_SesionPractica_Cliente");
 
-            entity.HasOne(d => d.IdVehiculoNavigation).WithMany(p => p.SesionPractica)
-                .HasForeignKey(d => d.IdVehiculo)
-                .HasConstraintName("FK__SesionPra__IdVeh__4316F928");
-        });
+    entity.HasOne(d => d.IdInstructorNavigation)
+        .WithMany(p => p.SesionPractica)
+        .HasForeignKey(d => d.IdInstructor)
+        .OnDelete(DeleteBehavior.Restrict)
+        .HasConstraintName("FK_SesionPractica_Instructor");
+
+    entity.HasOne(d => d.IdVehiculoNavigation)
+        .WithMany(p => p.SesionPractica)
+        .HasForeignKey(d => d.IdVehiculo)
+        .OnDelete(DeleteBehavior.Restrict)
+        .HasConstraintName("FK_SesionPractica_Vehiculo");
+});
 
         modelBuilder.Entity<Usuario>(entity =>
         {
@@ -342,20 +356,28 @@ public virtual DbSet<CursoTipo> CursoTipo { get; set; } // ✅ Agregado
         });
 
         modelBuilder.Entity<Vehiculo>(entity =>
-        {
-            entity.HasKey(e => e.IdVehiculo).HasName("PK__Vehiculo__7086121580FF7183");
+{
+    entity.HasKey(e => e.IdVehiculo).HasName("PK__Vehiculo__7086121580FF7183");
 
-            entity.Property(e => e.Estado).HasDefaultValue(true);
-            entity.Property(e => e.Marca)
-                .HasMaxLength(50)
-                .IsUnicode(false);
-            entity.Property(e => e.Modelo)
-                .HasMaxLength(50)
-                .IsUnicode(false);
-            entity.Property(e => e.Transmision)
-                .HasMaxLength(20)
-                .IsUnicode(false);
-        });
+    entity.Property(e => e.Marca)
+        .HasMaxLength(50)
+        .IsUnicode(false);
+
+    entity.Property(e => e.Modelo)
+        .HasMaxLength(50)
+        .IsUnicode(false);
+
+    entity.Property(e => e.Transmision)
+        .HasMaxLength(20)
+        .IsUnicode(false);
+
+    // 🚦 Estado ahora es texto con valor por defecto
+    entity.Property(e => e.Estado)
+        .HasMaxLength(20)
+        .IsUnicode(false)
+        .HasDefaultValue("Disponible");
+});
+
 modelBuilder.Entity<TokenRecuperacion>(entity =>
 {
     entity.HasKey(e => e.IdToken).HasName("PK__TokenRecuperacion");

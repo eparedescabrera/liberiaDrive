@@ -1,21 +1,20 @@
 @model LiberiaDriveMVC.Models.Vehiculo
-@{
-    Layout = null;
-}
 
-<h5 class="fw-bold text-info mb-3">Información del Vehículo</h5>
-<hr />
+<div class="p-3">
+    <h5 class="text-primary mb-3">🔎 Detalles del Vehículo</h5>
 
-<ul class="list-group shadow-sm mb-3">
-    <li class="list-group-item"><strong>Marca:</strong> @Model.Marca</li>
-    <li class="list-group-item"><strong>Modelo:</strong> @Model.Modelo</li>
-    <li class="list-group-item"><strong>Transmisión:</strong> @Model.Transmision</li>
-    <li class="list-group-item"><strong>Placa:</strong> @Model.Placa</li>
-    <li class="list-group-item"><strong>Estado:</strong>
-        @(Model.Estado ? "Activo ✅" : "Inactivo ❌")
-    </li>
-</ul>
+    <ul class="list-group mb-3">
+        <li class="list-group-item"><strong>ID:</strong> @Model.IdVehiculo</li>
+        <li class="list-group-item"><strong>Marca:</strong> @Model.Marca</li>
+        <li class="list-group-item"><strong>Modelo:</strong> @Model.Modelo</li>
+        <li class="list-group-item"><strong>Transmisión:</strong> @Model.Transmision</li>
+        <li class="list-group-item"><strong>Placa:</strong> @Model.Placa</li>
+        <li class="list-group-item"><strong>Estado:</strong> @Model.Estado</li>
+    </ul>
 
-<div class="text-end">
-    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+    <div class="text-end">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fa fa-arrow-left"></i> Cerrar
+        </button>
+    </div>
 </div>

@@ -1,0 +1,57 @@
+@model LiberiaDriveMVC.Models.SesionPractica
+
+<div class="p-3">
+<form id="formEditarSesion" autocomplete="off">
+    <input type="hidden" name="IdSesionPractica" value="@Model.IdSesionPractica" />
+
+    <div class="form-group mb-3">
+        <label><strong>Cliente:</strong></label>
+        <input class="form-control" value="@Model.IdClienteNavigation?.Nombre" readonly />
+        <input type="hidden" name="IdCliente" value="@Model.IdCliente" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label><strong>Instructor:</strong></label>
+        <select id="IdInstructor" name="IdInstructor" class="form-control select2" required>
+            @if (Model.IdInstructorNavigation != null)
+            {
+                <option value="@Model.IdInstructor" selected>@Model.IdInstructorNavigation.Nombre</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group mb-3">
+        <label><strong>Vehículo:</strong></label>
+        <select id="IdVehiculo" name="IdVehiculo" class="form-control select2" required>
+            @if (Model.IdVehiculoNavigation != null)
+            {
+                <option value="@Model.IdVehiculo" selected>@Model.IdVehiculoNavigation.Marca</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group mb-3">
+        <label><strong>Fecha de sesión:</strong></label>
+        <input asp-for="FechaSesion"
+               id="FechaSesion"
+               name="FechaSesion"
+               class="form-control calendario"
+               value="@(Model.FechaSesion == default ? "" : Model.FechaSesion.ToString("yyyy-MM-dd"))"
+               required />
+    </div>
+
+    <div class="form-group mb-3">
+        <label><strong>Estado:</strong></label>
+        <select name="Estado" class="form-select">
+            <option value="Programada" selected="@("Programada" == Model.Estado)">Programada</option>
+            <option value="Cancelada" selected="@("Cancelada" == Model.Estado)">Cancelada</option>
+        </select>
+    </div>
+
+    <div class="text-end mt-3">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-save"></i> Guardar Cambios
+        </button>
+    </div>
+</form>
+</div>
