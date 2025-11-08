@@ -18,6 +18,13 @@ $(document).ready(function () {
         $("#contenidoModal").load("/MantenimientoVehiculo/Create", function () {
             $("#modalMantenimiento").modal("show");
             inicializarComponentes();
+
+            // ✅ Establecer fecha actual automáticamente si está vacía
+            const inputFecha = $("input[name='FechaMantenimiento']");
+            if (!inputFecha.val()) {
+                const hoy = new Date().toISOString().split('T')[0];
+                inputFecha.val(hoy);
+            }
         });
     };
 
